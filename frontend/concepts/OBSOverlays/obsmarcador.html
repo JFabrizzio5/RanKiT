@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Overlay - LIVE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: transparent; /* CLAVE PARA OBS: Fondo transparente */
+            margin: 0;
+            padding: 40px;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+        .font-heading { font-family: 'Teko', sans-serif; }
+        
+        /* Animaciones */
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .anim-enter { animation: slideDown 0.6s cubic-bezier(0.2, 1, 0.3, 1) forwards; }
+        .anim-enter-up { animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1) forwards; }
+
+        /* Estilo Cristal */
+        .glass-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Overlay = () => {
+            // Datos por defecto (para que no salga vacío)
+            const [data, setData] = useState({
+                team1: "Equipo A",
+                team2: "Equipo B",
+                score1: 0,
+                score2: 0,
+                round: "ESPERANDO CONEXIÓN...",
+                status: "scheduled",
+                mvp: "",
+                kda: ""
+            });
+
+            useEffect(() => {
+                const load = () => {
+                    const stored = localStorage.getItem('tournament_overlay_data');
+                    if (stored) setData(JSON.parse(stored));
+                };
+                
+                // Cargar inicial
+                load();
+                
+                // Escuchar cambios
+                window.addEventListener('storage', load);
+                // Polling de seguridad
+                const interval = setInterval(load, 1000);
+                
+                return () => {
+                    window.removeEventListener('storage', load);
+                    clearInterval(interval);
+                };
+            }, []);
+
+            return (
+                <div className="w-full h-full flex flex-col justify-between">
+                    
+                    {/* --- MARCADOR SUPERIOR --- */}
+                    <div className="flex justify-center anim-enter">
+                        <div className="flex items-stretch h-20 shadow-2xl relative">
+                            {/* Barra decorativa superior */}
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-white to-red-500 z-20"></div>
+
+                            {/* Equipo 1 */}
+                            <div className="glass-box flex items-center pr-4 pl-8 rounded-bl-xl border-b-4 border-blue-600 min-w-[250px] justify-end relative">
+                                <span className="text-3xl font-bold uppercase text-white tracking-widest mr-4 font-heading">{data.team1}</span>
+                                <div className="bg-blue-600 w-12 h-full flex items-center justify-center text-3xl font-bold text-white skew-x-[-15deg] absolute right-0 top-0 bottom-0 shadow-lg z-10">
+                                    <span className="skew-x-[15deg]">{data.score1}</span>
+                                </div>
+                            </div>
+
+                            {/* VS / Info Central */}
+                            <div className="bg-[#0f172a] px-8 flex flex-col justify-center items-center z-20 border-b-4 border-slate-700 mx-[-10px]">
+                                <span className="text-yellow-400 font-bold text-xl font-heading leading-none uppercase">{data.round}</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-1">
+                                    {data.status === 'live' ? '🔴 EN VIVO' : 'OFICIAL'}
+                                </span>
+                            </div>
+
+                            {/* Equipo 2 */}
+                            <div className="glass-box flex items-center pl-4 pr-8 rounded-br-xl border-b-4 border-red-600 min-w-[250px] justify-start relative">
+                                <div className="bg-red-600 w-12 h-full flex items-center justify-center text-3xl font-bold text-white skew-x-[-15deg] absolute left-0 top-0 bottom-0 shadow-lg z-10">
+                                    <span className="skew-x-[15deg]">{data.score2}</span>
+                                </div>
+                                <span className="text-3xl font-bold uppercase text-white tracking-widest ml-16 font-heading">{data.team2}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- PANEL DE ESTADÍSTICAS (MVP) --- */}
+                    {data.mvp && (
+                        <div className="flex justify-start pb-10 anim-enter-up">
+                            <div className="glass-box rounded-r-xl border-l-8 border-yellow-500 flex items-center pr-10 pl-6 py-4 max-w-lg">
+                                <div className="flex flex-col">
+                                    <span className="text-yellow-500 text-xs font-bold tracking-[0.4em] uppercase mb-1">Jugador Destacado</span>
+                                    <span className="text-5xl font-bold text-white font-heading leading-none uppercase">{data.mvp}</span>
+                                    {data.kda && (
+                                        <div className="mt-2 flex items-center gap-2">
+                                            <span className="bg-slate-800 text-slate-400 text-xs font-bold px-2 py-1 rounded border border-white/10 uppercase">Estadísticas</span>
+                                            <span className="text-white font-mono font-bold text-lg">{data.kda}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Overlay />);
+    </script>
+</body>
+</html>

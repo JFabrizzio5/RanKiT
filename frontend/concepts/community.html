@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RankIT - Comunidad & Clips</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Chakra Petch', 'sans-serif'] },
+                    colors: {
+                        brand: { dark: '#0B0C15', purple: '#7C3AED', cyan: '#06B6D4', surface: '#151725' }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B0C15; color: white; }
+        /* Ocultar barra de scroll pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .glass-nav { background: rgba(11, 12, 21, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .video-card:hover .play-icon { opacity: 1; transform: scale(1); }
+        .story-ring { background: linear-gradient(45deg, #FF0055, #FFCC00); padding: 2px; border-radius: 50%; }
+        .live-ring { background: linear-gradient(45deg, #ff0000, #ff4d4d); padding: 2px; border-radius: 50%; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+    </style>
+</head>
+<body class="bg-[#0B0C15] min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="glass-nav fixed w-full z-50 h-16 flex items-center justify-between px-6 lg:px-12">
+        <div class="flex items-center gap-2">
+            <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none">
+                <path d="M20 80 L50 50 L80 20" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" />
+                <circle cx="20" cy="80" r="10" fill="#06B6D4" />
+                <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="#7C3AED" />
+            </svg>
+            <span class="font-display font-bold text-xl tracking-wider">RANK<span class="text-brand-cyan">IT</span></span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-400">
+            <a href="#" class="hover:text-white transition">Torneos</a>
+            <a href="#" class="text-white border-b-2 border-brand-cyan pb-4 -mb-4">Clips & Feed</a>
+            <a href="#" class="hover:text-white transition">Ranking</a>
+            <a href="#" class="hover:text-white transition">Noticias</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button class="text-gray-400 hover:text-white"><i class="fas fa-search text-lg"></i></button>
+            <div class="h-6 w-px bg-gray-800"></div>
+            <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-gray-300 hover:text-white text-sm font-bold">Log In</button>
+            <button onclick="document.getElementById('register-modal').classList.remove('hidden')" class="bg-brand-cyan hover:bg-cyan-400 text-black px-5 py-2 rounded-full font-bold text-sm transition transform hover:scale-105 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                Registrarse
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto">
+        
+        <!-- Live Now Section (Stories Style) -->
+        <section class="mb-12">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse-fast"></div>
+                <h2 class="font-display text-lg font-bold uppercase tracking-wider text-white">Live Ahora</h2>
+            </div>
+            
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+                <!-- Live User 1 -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer group min-w-[80px]">
+                    <div class="relative live-ring p-[2px]">
+                        <img src="https://i.pravatar.cc/150?img=11" class="w-16 h-16 rounded-full border-2 border-[#0B0C15] group-hover:scale-105 transition">
+                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-1.5 rounded-sm">LIVE</div>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-300 truncate w-20 text-center group-hover:text-white">xCryBaby</span>
+                </div>
+
+                <!-- Live User 2 (Staff) -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer group min-w-[80px]">
+                    <div class="relative live-ring p-[2px]">
+                        <img src="https://i.pravatar.cc/150?img=68" class="w-16 h-16 rounded-full border-2 border-[#0B0C15] group-hover:scale-105 transition">
+                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-1.5 rounded-sm">LIVE</div>
+                    </div>
+                    <span class="text-xs font-semibold text-brand-purple truncate w-20 text-center flex items-center justify-center gap-1">
+                        <i class="fas fa-shield-alt text-[10px]"></i> Admin
+                    </span>
+                </div>
+
+                <!-- Live User 3 -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer group min-w-[80px]">
+                    <div class="relative live-ring p-[2px]">
+                        <img src="https://i.pravatar.cc/150?img=3" class="w-16 h-16 rounded-full border-2 border-[#0B0C15] group-hover:scale-105 transition">
+                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-1.5 rounded-sm">LIVE</div>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-300 truncate w-20 text-center group-hover:text-white">FakerFaker</span>
+                </div>
+
+                <!-- Offline Story 1 -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer group min-w-[80px] opacity-70 hover:opacity-100 transition">
+                    <div class="story-ring p-[2px]">
+                        <img src="https://i.pravatar.cc/150?img=33" class="w-16 h-16 rounded-full border-2 border-[#0B0C15]">
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 truncate w-20 text-center">NinjaClips</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Grid Layout -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-64 flex-shrink-0 space-y-8 hidden lg:block sticky top-24 h-fit">
+                <div>
+                    <h3 class="font-bold text-gray-500 text-xs uppercase mb-4 tracking-wider">Explorar</h3>
+                    <div class="space-y-1">
+                        <button class="w-full text-left px-4 py-3 rounded-xl bg-brand-surface text-white font-bold border border-gray-700 flex items-center gap-3">
+                            <i class="fas fa-fire text-brand-cyan"></i> Tendencias
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                            <i class="fas fa-users"></i> Siguiendo
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition flex items-center gap-3">
+                            <i class="fas fa-video"></i> Clips Oficiales
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-500 text-xs uppercase mb-4 tracking-wider">Categorías</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer border border-gray-700">Valorant</span>
+                        <span class="px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer border border-gray-700">LoL</span>
+                        <span class="px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer border border-gray-700">Highlights</span>
+                        <span class="px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer border border-gray-700">Funny</span>
+                        <span class="px-3 py-1 rounded-full bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 cursor-pointer border border-gray-700">Fails</span>
+                    </div>
+                </div>
+                
+                <!-- Promo Box -->
+                <div class="bg-gradient-to-br from-brand-purple to-blue-900 rounded-2xl p-6 text-center">
+                    <h4 class="font-display font-bold text-xl mb-2">¡Sube tus Clips!</h4>
+                    <p class="text-xs text-blue-200 mb-4">Comparte tus mejores jugadas y gana RP o Skins.</p>
+                    <button class="w-full bg-white text-brand-purple font-bold py-2 rounded-lg text-sm hover:bg-gray-100 transition">Subir Video</button>
+                </div>
+            </aside>
+
+            <!-- Video Grid (TikTok Style Feed) -->
+            <div class="flex-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                    
+                    <!-- Video Card 1 -->
+                    <div class="video-card relative group aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-brand-cyan/50 transition duration-300">
+                        <!-- Video Placeholder -->
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+                        
+                        <!-- Play Icon Overlay -->
+                        <div class="play-icon absolute inset-0 flex items-center justify-center opacity-0 transition transform scale-75 duration-300">
+                            <div class="w-16 h-16 rounded-full bg-brand-cyan/90 flex items-center justify-center text-black text-2xl pl-1 shadow-[0_0_20px_rgba(6,182,212,0.6)]">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+
+                        <!-- Top Info -->
+                        <div class="absolute top-3 right-3 flex flex-col items-end gap-2">
+                            <span class="bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white border border-white/10 flex items-center gap-1">
+                                <i class="fas fa-eye text-brand-cyan"></i> 1.2k
+                            </span>
+                        </div>
+
+                        <!-- Bottom Info -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="relative">
+                                    <img src="https://i.pravatar.cc/150?img=12" class="w-10 h-10 rounded-full border border-white">
+                                    <!-- Live Badge if Live -->
+                                    <div class="absolute -top-1 -right-1 bg-red-600 text-[8px] font-bold px-1 rounded text-white animate-pulse">LIVE</div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-white font-bold text-sm truncate">ACE en ronda decisiva! 😱</div>
+                                    <div class="text-gray-400 text-xs truncate">@ProGamer_MX</div>
+                                </div>
+                                <button class="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-cyan hover:text-black flex items-center justify-center text-white transition">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <!-- Actions -->
+                            <div class="flex justify-between items-center text-white/80">
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-heart"></i> 450</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-comment"></i> 22</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-share"></i> Compartir</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Card 2 (Staff Post) -->
+                    <div class="video-card relative group aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden border border-brand-purple/30 shadow-[0_0_15px_rgba(124,58,237,0.1)] hover:shadow-[0_0_20px_rgba(124,58,237,0.3)] transition duration-300">
+                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+
+                        <div class="absolute top-3 left-3">
+                             <span class="bg-brand-purple text-white px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                                <i class="fas fa-crown"></i> Staff Pick
+                            </span>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <img src="https://i.pravatar.cc/150?img=60" class="w-10 h-10 rounded-full border-2 border-brand-purple">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-white font-bold text-sm truncate">Anuncio del Torneo 🏆</div>
+                                    <div class="text-brand-purple text-xs font-bold truncate">@RankIT_Official <i class="fas fa-check-circle"></i></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-white/80">
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-purple"><i class="fas fa-heart"></i> 2.5k</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-purple"><i class="fas fa-comment"></i> 150</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-purple"><i class="fas fa-share"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Card 3 -->
+                    <div class="video-card relative group aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-brand-cyan/50 transition duration-300">
+                        <img src="https://images.unsplash.com/photo-1593305841991-05c29736ce87?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+                        
+                         <div class="play-icon absolute inset-0 flex items-center justify-center opacity-0 transition transform scale-75 duration-300">
+                            <div class="w-16 h-16 rounded-full bg-brand-cyan/90 flex items-center justify-center text-black text-2xl pl-1">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <img src="https://i.pravatar.cc/150?img=8" class="w-10 h-10 rounded-full border border-white">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-white font-bold text-sm truncate">Setup Tour 2025 💻</div>
+                                    <div class="text-gray-400 text-xs truncate">@TechGeek</div>
+                                </div>
+                                <button class="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-cyan hover:text-black flex items-center justify-center text-white transition">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                             <div class="flex justify-between items-center text-white/80">
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-heart"></i> 89</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-comment"></i> 4</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-share"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Video Card 4 -->
+                     <div class="video-card relative group aspect-[9/16] bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-brand-cyan/50 transition duration-300">
+                        <img src="https://images.unsplash.com/photo-1616588589676-60b30c3c1681?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <img src="https://i.pravatar.cc/150?img=52" class="w-10 h-10 rounded-full border border-white">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-white font-bold text-sm truncate">Funny Glitch in Valo 🤣</div>
+                                    <div class="text-gray-400 text-xs truncate">@CasualPlayer</div>
+                                </div>
+                            </div>
+                             <div class="flex justify-between items-center text-white/80">
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-heart"></i> 320</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-comment"></i> 12</button>
+                                <button class="flex items-center gap-1 text-xs hover:text-brand-cyan"><i class="fas fa-share"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Load More -->
+                <div class="mt-12 text-center">
+                    <div class="inline-block animate-bounce">
+                        <i class="fas fa-chevron-down text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Registro -->
+    <div id="register-modal" class="fixed inset-0 z-[100] hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#151725] w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden relative">
+            <button onclick="document.getElementById('register-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h2 class="font-display font-bold text-2xl text-white">Únete a <span class="text-brand-cyan">RankIT</span></h2>
+                    <p class="text-gray-400 text-sm mt-1">Regístrate para subir clips y participar en torneos.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <button class="w-full bg-white text-black font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-100 transition">
+                        <img src="https://img.icons8.com/color/48/google-logo.png" class="w-5 h-5"> Continuar con Google
+                    </button>
+                    <button class="w-full bg-[#5865F2] text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition">
+                        <i class="fab fa-discord"></i> Continuar con Discord
+                    </button>
+                    
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-700"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-500 text-xs uppercase">O usa tu email</span>
+                        <div class="flex-grow border-t border-gray-700"></div>
+                    </div>
+
+                    <div>
+                        <input type="text" placeholder="Nombre de Usuario" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:border-brand-cyan outline-none mb-3">
+                        <input type="email" placeholder="Correo Electrónico" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:border-brand-cyan outline-none mb-3">
+                        <input type="password" placeholder="Contraseña" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:border-brand-cyan outline-none">
+                    </div>
+
+                    <button class="w-full bg-brand-cyan hover:bg-cyan-400 text-black font-bold py-3 rounded-lg mt-2 transition shadow-lg shadow-cyan-500/20">
+                        Crear Cuenta
+                    </button>
+                    
+                    <p class="text-center text-xs text-gray-500 mt-4">
+                        Al registrarte aceptas nuestros <a href="#" class="text-brand-cyan hover:underline">Términos y Condiciones</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Modal Login (Simplificado para demo) -->
+     <div id="login-modal" class="fixed inset-0 z-[100] hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-[#151725] w-full max-w-sm rounded-2xl border border-gray-700 shadow-2xl p-8 relative">
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="font-display font-bold text-2xl text-white mb-6 text-center">Bienvenido de nuevo</h2>
+            <input type="email" placeholder="Correo Electrónico" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm mb-4 outline-none focus:border-brand-cyan">
+            <input type="password" placeholder="Contraseña" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm mb-6 outline-none focus:border-brand-cyan">
+            <button class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition">Iniciar Sesión</button>
+        </div>
+    </div>
+
+</body>
+</html>

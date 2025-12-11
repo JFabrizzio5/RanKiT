@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RankIT Dashboard - Cometax</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para gráficas bonitas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Chakra Petch', 'sans-serif'] },
+                    colors: {
+                        brand: { dark: '#0B0C15', purple: '#7C3AED', cyan: '#06B6D4', surface: '#151725' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B0C15; color: white; }
+        .glass-panel { background: #151725; border: 1px solid #2D3042; }
+        .nav-item { cursor: pointer; }
+        .nav-item.active { background: rgba(6, 182, 212, 0.1); border-right: 3px solid #06B6D4; color: white; }
+        /* Transiciones suaves para cambio de pestañas */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        /* Custom Checkbox Toggle */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #06B6D4;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #06B6D4;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-sm">
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass-panel flex flex-col z-20 shadow-2xl border-r border-white/5">
+        <div class="h-20 flex items-center px-6 border-b border-gray-800 gap-3">
+             <!-- Cometax Logo Small -->
+             <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none">
+                <path d="M20 80 L50 50 L80 20" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" />
+                <circle cx="20" cy="80" r="10" fill="#06B6D4" />
+                <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="#7C3AED" />
+            </svg>
+            <div class="flex flex-col">
+                <span class="font-display font-bold text-lg">RANK<span class="text-brand-cyan">IT</span></span>
+                <span class="text-[9px] text-gray-500 uppercase">Panel Cometax</span>
+            </div>
+        </div>
+        
+        <div class="flex-1 py-6 space-y-1">
+            <div onclick="switchTab('resumen')" id="nav-resumen" class="nav-item active flex items-center px-6 py-3 text-gray-400 hover:bg-white/5 hover:text-white transition group">
+                <i class="fas fa-chart-pie w-6 group-hover:text-brand-cyan transition"></i> Resumen
+            </div>
+            <div onclick="switchTab('torneos')" id="nav-torneos" class="nav-item flex items-center px-6 py-3 text-gray-400 hover:bg-white/5 hover:text-white transition group">
+                <i class="fas fa-trophy w-6 group-hover:text-brand-cyan transition"></i> Mis Torneos
+            </div>
+            
+            <div class="pt-6 pb-2 px-6 text-xs font-bold text-brand-cyan uppercase tracking-widest">Herramientas</div>
+            
+            <div onclick="switchTab('streaming')" id="nav-streaming" class="nav-item flex items-center px-6 py-3 text-gray-400 hover:bg-white/5 hover:text-white transition group">
+                <i class="fas fa-video w-6 group-hover:text-red-500 transition"></i> OBS Widgets 
+            </div>
+
+            <div class="pt-6 pb-2 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest">Configuración</div>
+            
+            <div onclick="switchTab('ajustes')" id="nav-ajustes" class="nav-item flex items-center px-6 py-3 text-gray-400 hover:bg-white/5 hover:text-white transition group">
+                <i class="fas fa-cog w-6 group-hover:text-brand-purple transition"></i> Ajustes de Torneo
+            </div>
+        </div>
+
+        <!-- User Profile Mini -->
+        <div class="p-4 border-t border-gray-800 bg-black/20">
+            <div class="flex items-center gap-3">
+                <img src="https://i.pravatar.cc/150?img=60" class="w-9 h-9 rounded-full border border-brand-cyan">
+                <div>
+                    <div class="font-bold text-xs text-white">Cometax Org</div>
+                    <div class="text-[10px] text-brand-cyan">Plan Enterprise</div>
+                </div>
+                <button class="ml-auto text-gray-500 hover:text-white"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative overflow-y-auto bg-[#0B0C15] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+        
+        <!-- Topbar Global -->
+        <header class="h-20 border-b border-gray-800 flex items-center justify-between px-8 bg-[#0B0C15]/90 backdrop-blur-md sticky top-0 z-30">
+            <div id="header-title">
+                <h2 class="font-display text-2xl font-bold">Resumen General</h2>
+                <p class="text-gray-500 text-xs">Bienvenido de nuevo, organizador.</p>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <i class="fas fa-bell text-gray-400 text-lg hover:text-white cursor-pointer"></i>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </div>
+                <button class="bg-gradient-to-r from-brand-purple to-brand-cyan hover:opacity-90 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-purple-900/40 text-xs transition transform hover:scale-105">
+                    <i class="fas fa-plus"></i> Crear Torneo
+                </button>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto w-full">
+
+            <!-- VISTA 1: RESUMEN (DASHBOARD HOME) -->
+            <div id="view-resumen" class="tab-content active">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- Stat 1 -->
+                    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden group hover:border-brand-cyan/50 transition">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-brand-cyan/10 rounded-full blur-2xl -mr-10 -mt-10 transition group-hover:bg-brand-cyan/20"></div>
+                        <div class="text-gray-400 mb-1 text-xs uppercase font-bold tracking-wider">Torneos Activos</div>
+                        <div class="text-3xl font-display font-bold text-white">3</div>
+                        <div class="text-green-400 text-xs mt-2 flex items-center gap-1"><i class="fas fa-arrow-up"></i> 1 nuevo esta semana</div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden group hover:border-brand-purple/50 transition">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-brand-purple/10 rounded-full blur-2xl -mr-10 -mt-10 transition group-hover:bg-brand-purple/20"></div>
+                        <div class="text-gray-400 mb-1 text-xs uppercase font-bold tracking-wider">Inscritos Totales</div>
+                        <div class="text-3xl font-display font-bold text-white">248</div>
+                        <div class="text-green-400 text-xs mt-2 flex items-center gap-1"><i class="fas fa-arrow-up"></i> 12% vs mes anterior</div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden group hover:border-yellow-500/50 transition">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition group-hover:bg-yellow-500/20"></div>
+                        <div class="text-gray-400 mb-1 text-xs uppercase font-bold tracking-wider">Ingresos (Fees)</div>
+                        <div class="text-3xl font-display font-bold text-white">$12,450</div>
+                        <div class="text-gray-500 text-xs mt-2">MXN acumulados este mes</div>
+                    </div>
+                    <!-- Stat 4 -->
+                    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden group hover:border-red-500/50 transition">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition group-hover:bg-red-500/20"></div>
+                        <div class="text-gray-400 mb-1 text-xs uppercase font-bold tracking-wider">Vistas en Vivo</div>
+                        <div class="text-3xl font-display font-bold text-white">1.2k</div>
+                        <div class="text-red-400 text-xs mt-2 flex items-center gap-1"><i class="fas fa-circle text-[8px] animate-pulse"></i> Live ahora</div>
+                    </div>
+                </div>
+
+                <!-- Charts & Activity Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Chart Area -->
+                    <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
+                        <h3 class="font-bold text-lg mb-4 flex items-center justify-between">
+                            Rendimiento de Inscripciones
+                            <select class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-gray-400 outline-none">
+                                <option>Últimos 30 días</option>
+                                <option>Este año</option>
+                            </select>
+                        </h3>
+                        <div class="h-64 w-full">
+                            <canvas id="registrationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Feed -->
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="font-bold text-lg mb-4">Actividad Reciente</h3>
+                        <div class="space-y-4">
+                            <div class="flex gap-3 items-start">
+                                <div class="w-8 h-8 rounded-full bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs mt-1"><i class="fas fa-user-plus"></i></div>
+                                <div>
+                                    <p class="text-sm text-gray-300"><span class="font-bold text-white">xSlayer99</span> se inscribió en <span class="text-brand-purple">Valorant Cup</span></p>
+                                    <p class="text-[10px] text-gray-500">Hace 2 min</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center text-xs mt-1"><i class="fas fa-money-bill-wave"></i></div>
+                                <div>
+                                    <p class="text-sm text-gray-300">Pago de inscripción recibido ($50 MXN)</p>
+                                    <p class="text-[10px] text-gray-500">Hace 15 min</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center text-xs mt-1"><i class="fas fa-trophy"></i></div>
+                                <div>
+                                    <p class="text-sm text-gray-300"><span class="font-bold text-white">Team Liquid</span> ganó la Ronda 2</p>
+                                    <p class="text-[10px] text-gray-500">Hace 1 hora</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 text-xs text-brand-cyan hover:text-white transition">Ver todo el historial</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 2: TORNEOS (LIST) -->
+            <div id="view-torneos" class="tab-content">
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <!-- Table Filters -->
+                    <div class="p-5 border-b border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex gap-2 bg-black/30 p-1 rounded-lg">
+                            <button class="px-4 py-1.5 rounded-md bg-gray-700 text-white text-xs font-bold shadow">Todos</button>
+                            <button class="px-4 py-1.5 rounded-md text-gray-400 hover:text-white text-xs font-bold transition">Activos</button>
+                            <button class="px-4 py-1.5 rounded-md text-gray-400 hover:text-white text-xs font-bold transition">Borradores</button>
+                            <button class="px-4 py-1.5 rounded-md text-gray-400 hover:text-white text-xs font-bold transition">Finalizados</button>
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                            <input type="text" placeholder="Buscar torneo..." class="bg-black/30 border border-gray-700 rounded-lg pl-8 pr-4 py-2 text-xs text-white focus:border-brand-cyan outline-none w-64">
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-gray-400">
+                            <thead class="bg-black/40 text-[10px] uppercase font-bold tracking-wider text-gray-500">
+                                <tr>
+                                    <th class="px-6 py-4">Torneo</th>
+                                    <th class="px-6 py-4">Juego</th>
+                                    <th class="px-6 py-4">Estado</th>
+                                    <th class="px-6 py-4">Inscritos</th>
+                                    <th class="px-6 py-4">Fecha</th>
+                                    <th class="px-6 py-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800 text-sm">
+                                <!-- Row 1 -->
+                                <tr class="hover:bg-white/5 transition group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded bg-gradient-to-br from-brand-purple to-blue-600 flex items-center justify-center text-white font-bold">V</div>
+                                            <div>
+                                                <div class="font-bold text-white group-hover:text-brand-cyan transition">Valorant Masters Q1</div>
+                                                <div class="text-[10px] text-gray-500">ID: #TRN-8821</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4"><span class="flex items-center gap-2"><img src="https://img.icons8.com/color/48/valorant.png" class="w-4 h-4"> Valorant</span></td>
+                                    <td class="px-6 py-4"><span class="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-bold flex w-fit items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> En Curso</span></td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-16 bg-gray-700 rounded-full h-1.5">
+                                                <div class="bg-brand-cyan h-1.5 rounded-full" style="width: 75%"></div>
+                                            </div>
+                                            <span class="text-xs">48/64</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs">12 Oct, 2025</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="text-gray-400 hover:text-white mx-1" onclick="switchTab('ajustes')"><i class="fas fa-edit"></i></button>
+                                        <button class="text-gray-400 hover:text-brand-cyan mx-1" onclick="switchTab('streaming')"><i class="fas fa-video"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Row 2 -->
+                                <tr class="hover:bg-white/5 transition group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded bg-gradient-to-br from-yellow-600 to-yellow-400 flex items-center justify-center text-black font-bold">F</div>
+                                            <div>
+                                                <div class="font-bold text-white group-hover:text-brand-cyan transition">Fortnite Build Battle</div>
+                                                <div class="text-[10px] text-gray-500">ID: #TRN-9902</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4"><span class="flex items-center gap-2"><i class="fas fa-cube text-yellow-500"></i> Fortnite</span></td>
+                                    <td class="px-6 py-4"><span class="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-1 rounded text-xs font-bold">Registro Abierto</span></td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-16 bg-gray-700 rounded-full h-1.5">
+                                                <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 15%"></div>
+                                            </div>
+                                            <span class="text-xs">15/100</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs">20 Oct, 2025</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button class="text-gray-400 hover:text-white mx-1" onclick="switchTab('ajustes')"><i class="fas fa-edit"></i></button>
+                                        <button class="text-gray-400 hover:text-brand-cyan mx-1"><i class="fas fa-share-alt"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="p-4 border-t border-gray-800 flex justify-between items-center text-xs text-gray-500">
+                        <span>Mostrando 2 de 15 torneos</span>
+                        <div class="flex gap-1">
+                            <button class="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-white">Anterior</button>
+                            <button class="px-3 py-1 rounded bg-brand-cyan text-black font-bold">1</button>
+                            <button class="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-white">2</button>
+                            <button class="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-white">Siguiente</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 3: STREAMING (OBS) -->
+            <div id="view-streaming" class="tab-content">
+                <!-- OBS Widget Generator -->
+                <div class="glass-panel p-8 rounded-2xl border-t-4 border-brand-cyan mb-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h3 class="font-display text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-list-ol text-brand-purple"></i> Leaderboard en Tiempo Real
+                            </h3>
+                            <p class="text-gray-400 text-sm mt-1">Genera una URL para usar como "Browser Source" en OBS Studio o Streamlabs.</p>
+                        </div>
+                        <button onclick="document.getElementById('preview-frame').contentWindow.location.reload();" class="text-brand-cyan hover:text-white text-sm underline">
+                            <i class="fas fa-sync"></i> Recargar Vista Previa
+                        </button>
+                    </div>
+
+                    <!-- URL Copy Box -->
+                    <div class="bg-black/50 p-4 rounded-lg border border-gray-700 flex items-center gap-4 mb-8">
+                        <div class="bg-gray-800 px-3 py-1 rounded text-xs font-mono text-gray-400">BROWSER SOURCE URL</div>
+                        <input type="text" value="https://rankit.gg/overlay/widget/leaderboard?id=tournament_123" readonly 
+                            class="bg-transparent border-none text-gray-300 flex-1 outline-none font-mono text-sm">
+                        <button class="bg-brand-purple hover:bg-brand-purple/80 text-white px-4 py-2 rounded font-bold text-sm transition shadow-lg shadow-purple-900/50" onclick="alert('URL Copiada!')">
+                            Copiar URL
+                        </button>
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Controls -->
+                        <div class="space-y-6">
+                            <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700">
+                                <h4 class="font-bold mb-4 text-sm uppercase text-gray-500">Control Manual</h4>
+                                <p class="text-xs text-gray-400 mb-4">Simula cambios en el backend para ver cómo reacciona el overlay.</p>
+                                
+                                <div class="space-y-3">
+                                    <button class="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between group transition">
+                                        <span>Actualizar Puntos (Top 1)</span>
+                                        <i class="fas fa-arrow-up text-green-500"></i>
+                                    </button>
+                                    <button class="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between group transition">
+                                        <span>Cambiar Líder</span>
+                                        <i class="fas fa-exchange-alt text-brand-cyan"></i>
+                                    </button>
+                                    <button class="w-full bg-red-900/20 hover:bg-red-900/40 border border-red-900/50 p-3 rounded-lg flex items-center justify-between group transition text-red-400">
+                                        <span>Resetear Tabla</span>
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Iframe Preview (Simulación del Overlay) -->
+                        <div class="lg:col-span-2 bg-[url('https://obsproject.com/assets/images/new_sources.png')] bg-cover bg-center rounded-xl overflow-hidden border border-gray-700 relative h-[400px] shadow-2xl">
+                            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                            <div class="absolute inset-0 flex items-center justify-center p-8">
+                                <iframe id="preview-frame" src="obs_overlay.html" class="w-full h-full border-none bg-transparent rounded-lg"></iframe>
+                            </div>
+                            <div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">PREVIEW MODE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 4: AJUSTES (CONFIGURACIÓN) -->
+            <div id="view-ajustes" class="tab-content">
+                
+                <!-- Selector de Torneo (Barra Superior) -->
+                <div class="glass-panel p-4 rounded-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-4 border-l-4 border-brand-purple">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-brand-purple/20 text-brand-purple p-2 rounded-lg">
+                            <i class="fas fa-chess-king text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">Seleccionar Torneo</h3>
+                            <p class="text-xs text-gray-500">Elige el torneo que deseas configurar.</p>
+                        </div>
+                    </div>
+                    <select class="bg-black border border-gray-700 rounded-lg px-4 py-2 text-white outline-none w-full md:w-64 focus:border-brand-purple">
+                        <option>Valorant Masters Q1</option>
+                        <option>Fortnite Build Battle</option>
+                        <option>League of Legends Weekly</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Columna Izquierda: Config General -->
+                    <div class="space-y-8">
+                        <!-- Editar Información -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-edit text-brand-cyan"></i> Información General
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Nombre del Torneo</label>
+                                    <input type="text" value="Valorant Masters Q1" class="w-full bg-black/50 border border-gray-700 rounded p-2.5 text-white focus:border-brand-cyan outline-none transition">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Juego</label>
+                                        <select class="w-full bg-black/50 border border-gray-700 rounded p-2.5 text-gray-300 outline-none">
+                                            <option>Valorant</option>
+                                            <option>Fortnite</option>
+                                            <option>League of Legends</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Estado</label>
+                                        <select class="w-full bg-black/50 border border-gray-700 rounded p-2.5 text-green-400 font-bold outline-none">
+                                            <option class="text-green-400">En Curso</option>
+                                            <option class="text-yellow-400">Registro Abierto</option>
+                                            <option class="text-gray-400">Finalizado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between bg-black/20 p-3 rounded-lg border border-gray-800">
+                                    <div>
+                                        <span class="block text-sm font-bold text-white">Torneo Gratuito</span>
+                                        <span class="text-xs text-gray-500">No cobrar fee de entrada a los jugadores.</span>
+                                    </div>
+                                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle" id="toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0 checked:border-brand-cyan"/>
+                                        <label for="toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700 cursor-pointer"></label>
+                                    </div>
+                                </div>
+                                <button class="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/50 py-2 rounded font-bold transition">
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Notificaciones -->
+                        <div class="glass-panel p-6 rounded-2xl">
+                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-bullhorn text-yellow-500"></i> Enviar Notificación
+                            </h3>
+                            <div class="space-y-3">
+                                <textarea class="w-full bg-black/50 border border-gray-700 rounded p-3 text-white text-sm outline-none focus:border-yellow-500 h-24" placeholder="Escribe un mensaje para los participantes..."></textarea>
+                                <div class="flex gap-2">
+                                    <select class="bg-black/50 border border-gray-700 rounded px-3 py-2 text-xs text-gray-400 outline-none flex-1">
+                                        <option>A Todos los Participantes</option>
+                                        <option>Solo Capitanes</option>
+                                        <option>Solo Staff</option>
+                                    </select>
+                                    <button class="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded font-bold text-xs transition">
+                                        Enviar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Solicitudes -->
+                    <div class="glass-panel p-6 rounded-2xl h-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg flex items-center gap-2">
+                                <i class="fas fa-user-clock text-orange-500"></i> Solicitudes Pendientes
+                                <span class="bg-orange-500/20 text-orange-500 text-xs px-2 py-0.5 rounded-full">3</span>
+                            </h3>
+                            <button class="text-xs text-gray-400 hover:text-white underline">Historial</button>
+                        </div>
+
+                        <!-- Lista de Solicitudes -->
+                        <div class="space-y-4">
+                            
+                            <!-- Request 1 -->
+                            <div class="bg-black/30 p-4 rounded-xl border border-gray-800 flex items-center justify-between group hover:border-gray-600 transition">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://i.pravatar.cc/150?img=12" class="w-10 h-10 rounded-full border border-gray-700">
+                                    <div>
+                                        <div class="font-bold text-white text-sm">DarkWarrior_99</div>
+                                        <div class="text-[10px] text-gray-500">Rango: Diamante II</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="w-8 h-8 rounded bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Request 2 -->
+                            <div class="bg-black/30 p-4 rounded-xl border border-gray-800 flex items-center justify-between group hover:border-gray-600 transition">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://i.pravatar.cc/150?img=33" class="w-10 h-10 rounded-full border border-gray-700">
+                                    <div>
+                                        <div class="font-bold text-white text-sm">Klaudia_FPS</div>
+                                        <div class="text-[10px] text-gray-500">Rango: Ascendente I</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="w-8 h-8 rounded bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Request 3 -->
+                            <div class="bg-black/30 p-4 rounded-xl border border-gray-800 flex items-center justify-between group hover:border-gray-600 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-xs text-gray-500">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-white text-sm">NoobMaster69</div>
+                                        <div class="text-[10px] text-gray-500">Rango: Hierro III</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="w-8 h-8 rounded bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-900/10 rounded-lg border border-blue-500/20">
+                            <h4 class="text-blue-400 font-bold text-xs mb-1"><i class="fas fa-info-circle"></i> Auto-Aceptar</h4>
+                            <p class="text-[10px] text-gray-400">Puedes habilitar la aceptación automática si los jugadores cumplen con el rango mínimo requerido.</p>
+                            <button class="text-[10px] text-blue-400 underline mt-1">Configurar reglas</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JS Logic -->
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+
+            // Show selected
+            document.getElementById('view-' + tabId).classList.add('active');
+            
+            // Highlight nav
+            const navId = 'nav-' + tabId;
+            const navEl = document.getElementById(navId);
+            if(navEl) navEl.classList.add('active');
+
+            // Update Header Title based on Tab
+            const titles = {
+                'resumen': 'Resumen General',
+                'torneos': 'Gestión de Torneos',
+                'streaming': 'Herramientas de Streaming',
+                'ajustes': 'Configuración del Torneo'
+            };
+            document.querySelector('#header-title h2').innerText = titles[tabId] || 'Dashboard';
+        }
+
+        // Initialize Charts (Simulated)
+        const ctx = document.getElementById('registrationChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+                    datasets: [{
+                        label: 'Nuevos Inscritos',
+                        data: [12, 19, 15, 25, 32, 40, 38],
+                        borderColor: '#06B6D4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#666' } },
+                        x: { grid: { display: false }, ticks: { color: '#666' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

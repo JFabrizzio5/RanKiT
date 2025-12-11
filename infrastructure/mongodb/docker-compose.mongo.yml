@@ -1,0 +1,22 @@
+services:
+  mongo_db:
+    image: mongo:latest
+    container_name: saas_mongo_container
+    restart: always
+    ports:
+      - "${MONGO_PORT_EXTERNAL}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_saas_data:/data/db
+    networks:
+      - saas_net # <--- Usamos la referencia interna
+
+volumes:
+  mongo_saas_data:
+
+networks:
+  saas_net: # <--- Nombre interno fijo (clave)
+    name: ${NETWORK_NAME} # <--- Nombre real externo (aquí sí funciona la variable)
+    external: true

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Torneo PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #050b14;
+            color: #e2e8f0;
+            background-image: linear-gradient(to bottom, #050b14, #0f172a);
+            min-height: 100vh;
+        }
+        .font-heading { font-family: 'Teko', sans-serif; }
+        
+        /* Bracket Grid Layout - Much more stable */
+        .bracket-container {
+            display: flex;
+            flex-direction: row;
+            gap: 40px; /* Space between rounds */
+            padding: 40px;
+        }
+        .round-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        
+        /* Conectores */
+        .match-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        /* Linea saliendo a la derecha del match */
+        .match-wrapper::after {
+            content: '';
+            position: absolute;
+            right: -20px; /* Mitad del gap */
+            top: 50%;
+            width: 20px;
+            height: 2px;
+            background: #334155;
+            display: none; /* Hidden by default */
+        }
+        /* Mostrar linea si no es la final */
+        .round-column:not(:last-child) .match-wrapper::after {
+            display: block;
+        }
+
+        /* Lineas verticales para conectar hijos con padres */
+        .connector-vertical {
+            position: absolute;
+            right: -22px;
+            width: 2px;
+            background: #334155;
+        }
+
+        /* Estilo de Tarjeta */
+        .match-card {
+            background: #1e293b;
+            width: 240px;
+            border-left: 4px solid #475569;
+            transition: all 0.2s;
+        }
+        .match-card:hover {
+            transform: translateX(4px);
+            background: #283548;
+            border-left-color: #3b82f6;
+            cursor: pointer;
+        }
+        .match-card.live { border-left-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
+        .match-card.finished { border-left-color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Mock Data ---
+        const initialGroups = [
+            { name: "Grupo A", teams: [{id:1, name:"Dragones", pts:9, w:3, l:0}, {id:2, name:"Fénix", pts:6, w:2, l:1}, {id:3, name:"Lobos", pts:3, w:1, l:2}, {id:4, name:"Titanes", pts:0, w:0, l:3}] },
+            { name: "Grupo B", teams: [{id:5, name:"Viper", pts:7, w:2, l:0}, {id:6, name:"Kraken", pts:5, w:1, l:1}, {id:7, name:"Shadow", pts:4, w:1, l:1}, {id:8, name:"Mechs", pts:0, w:0, l:3}] }
+        ];
+
+        const initialBracket = {
+            quarterfinals: [
+                { id: 'QF1', team1: "Dragones", team2: "Kraken", score1: 2, score2: 0, status: 'finished', mvp: "Slayer", kda: "12/2" },
+                { id: 'QF2', team1: "Viper", team2: "Fénix", score1: 1, score2: 2, status: 'finished', mvp: "Phoenix", kda: "8/4" },
+                { id: 'QF3', team1: "Alpha", team2: "Beta", score1: 0, score2: 0, status: 'scheduled', mvp: "", kda: "" },
+                { id: 'QF4', team1: "Gamma", team2: "Delta", score1: 0, score2: 0, status: 'scheduled', mvp: "", kda: "" },
+            ],
+            semifinals: [
+                { id: 'SF1', team1: "Dragones", team2: "Fénix", score1: 0, score2: 0, status: 'live', mvp: "", kda: "" },
+                { id: 'SF2', team1: "TBD", team2: "TBD", score1: 0, score2: 0, status: 'scheduled', mvp: "", kda: "" },
+            ],
+            finals: [
+                { id: 'FINAL', team1: "TBD", team2: "TBD", score1: 0, score2: 0, status: 'scheduled', mvp: "", kda: "" },
+            ]
+        };
+
+        // --- Components ---
+
+        const Navbar = ({ activeTab, setActiveTab }) => {
+            const openOverlayWindow = () => {
+                const width = 1280;
+                const height = 720;
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
+                
+                // Abre una ventana nueva que carga el archivo overlay_obs.html
+                // NOTA: Para que esto funcione perfecto localmente, el archivo overlay_obs.html debe estar en la misma carpeta.
+                window.open('overlay_obs.html', 'TournamentOverlay', `width=${width},height=${height},top=${top},left=${left}`);
+            };
+
+            return (
+                <nav className="bg-[#0f172a] border-b border-white/10 p-4 sticky top-0 z-50 shadow-lg">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 text-white font-bold p-2 rounded">TC</div>
+                            <h1 className="text-2xl font-heading text-white tracking-widest uppercase">Torneo Control</h1>
+                        </div>
+                        <div className="flex gap-4">
+                            <button onClick={() => setActiveTab('groups')} className={`px-4 py-2 rounded text-sm font-bold uppercase ${activeTab === 'groups' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}>Grupos</button>
+                            <button onClick={() => setActiveTab('bracket')} className={`px-4 py-2 rounded text-sm font-bold uppercase ${activeTab === 'bracket' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}>Playoffs</button>
+                            
+                            <div className="w-px h-8 bg-white/10 mx-2"></div>
+                            
+                            <button 
+                                onClick={openOverlayWindow}
+                                className="px-4 py-2 rounded bg-green-600 hover:bg-green-500 text-white text-sm font-bold uppercase flex items-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                Abrir Overlay
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        const MatchCard = ({ match, onClick }) => {
+            const isLive = match.status === 'live';
+            
+            return (
+                <div className="match-wrapper">
+                    <div 
+                        onClick={() => onClick(match)}
+                        className={`match-card rounded p-3 relative ${match.status} shadow-lg`}
+                    >
+                        {isLive && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded animate-pulse">LIVE</span>}
+                        <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase mb-2">
+                            <span>{match.id}</span>
+                            <span>{match.status === 'finished' ? 'Final' : ''}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className={`font-semibold text-sm truncate ${match.score1 > match.score2 ? 'text-white' : 'text-slate-400'}`}>{match.team1}</span>
+                            <span className={`font-mono font-bold ${match.score1 > match.score2 ? 'text-blue-400' : 'text-slate-500'}`}>{match.score1}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className={`font-semibold text-sm truncate ${match.score2 > match.score1 ? 'text-white' : 'text-slate-400'}`}>{match.team2}</span>
+                            <span className={`font-mono font-bold ${match.score2 > match.score1 ? 'text-blue-400' : 'text-slate-500'}`}>{match.score2}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EditModal = ({ match, isOpen, onClose, onSave }) => {
+            if (!isOpen || !match) return null;
+            const [data, setData] = useState(match);
+
+            const handleChange = (field, value) => {
+                setData(prev => ({ ...prev, [field]: value }));
+            };
+
+            const pushToOverlay = () => {
+                const overlayData = {
+                    ...data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('tournament_overlay_data', JSON.stringify(overlayData));
+                // Dispara evento para ventanas abiertas
+                window.dispatchEvent(new Event('storage'));
+            };
+
+            const handleSave = () => {
+                onSave(data);
+                pushToOverlay();
+                onClose();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
+                    <div className="bg-[#1e293b] w-full max-w-md rounded-lg border border-slate-700 shadow-2xl overflow-hidden">
+                        <div className="bg-[#0f172a] p-4 border-b border-slate-700 flex justify-between items-center">
+                            <h3 className="text-white font-bold uppercase font-heading text-xl">Editar Partido</h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white">&times;</button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="flex items-center gap-4 bg-slate-900/50 p-4 rounded border border-white/5">
+                                <div className="text-center w-full">
+                                    <label className="block text-[10px] text-slate-500 uppercase">{data.team1}</label>
+                                    <input type="number" value={data.score1} onChange={(e) => handleChange('score1', parseInt(e.target.value))} className="bg-transparent text-center text-3xl font-bold text-white w-full outline-none border-b border-transparent focus:border-blue-500" />
+                                </div>
+                                <span className="text-slate-600 font-bold text-xl">:</span>
+                                <div className="text-center w-full">
+                                    <label className="block text-[10px] text-slate-500 uppercase">{data.team2}</label>
+                                    <input type="number" value={data.score2} onChange={(e) => handleChange('score2', parseInt(e.target.value))} className="bg-transparent text-center text-3xl font-bold text-white w-full outline-none border-b border-transparent focus:border-red-500" />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase">Estado</label>
+                                <select value={data.status} onChange={(e) => handleChange('status', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white mt-1">
+                                    <option value="scheduled">Programado</option>
+                                    <option value="live">🔴 En Vivo</option>
+                                    <option value="finished">🏁 Finalizado</option>
+                                </select>
+                            </div>
+
+                            <div className="pt-4 border-t border-white/5">
+                                <h4 className="text-xs font-bold text-blue-400 uppercase mb-2">Overlay Extras</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <input type="text" placeholder="MVP" value={data.mvp} onChange={(e) => handleChange('mvp', e.target.value)} className="bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" />
+                                    <input type="text" placeholder="KDA / Stats" value={data.kda} onChange={(e) => handleChange('kda', e.target.value)} className="bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" />
+                                </div>
+                            </div>
+                            
+                            <button onClick={() => { pushToOverlay(); alert('¡Overlay Actualizado!'); }} className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold uppercase rounded">
+                                Solo Actualizar Overlay
+                            </button>
+
+                            <button onClick={handleSave} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase rounded shadow-lg shadow-blue-500/20">
+                                Guardar y Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('bracket');
+            const [bracket, setBracket] = useState(initialBracket);
+            const [selectedMatch, setSelectedMatch] = useState(null);
+
+            const handleUpdate = (updatedMatch) => {
+                const newBracket = { ...bracket };
+                for (const round in newBracket) {
+                    const idx = newBracket[round].findIndex(m => m.id === updatedMatch.id);
+                    if (idx !== -1) newBracket[round][idx] = updatedMatch;
+                }
+                setBracket(newBracket);
+            };
+
+            return (
+                <div>
+                    <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <main className="max-w-7xl mx-auto p-4">
+                        {activeTab === 'groups' ? (
+                            <div className="grid md:grid-cols-2 gap-6 animate-fade-in">
+                                {initialGroups.map((g, i) => (
+                                    <div key={i} className="bg-[#1e293b] rounded border border-slate-700 p-4">
+                                        <h3 className="text-xl font-heading font-bold text-white mb-4 border-l-4 border-blue-500 pl-2">{g.name}</h3>
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="text-xs text-slate-500 uppercase bg-slate-900/50"><tr><th className="p-2">Team</th><th className="p-2 text-center">W</th><th className="p-2 text-center">L</th><th className="p-2 text-center">PTS</th></tr></thead>
+                                            <tbody className="divide-y divide-slate-700">
+                                                {g.teams.map(t => (
+                                                    <tr key={t.id}><td className="p-2 font-bold">{t.name}</td><td className="p-2 text-center text-green-400">{t.w}</td><td className="p-2 text-center text-red-400">{t.l}</td><td className="p-2 text-center font-bold text-white">{t.pts}</td></tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto pb-20">
+                                <div className="bracket-container min-w-max justify-center">
+                                    <div className="round-column">
+                                        <div className="text-center text-slate-500 text-xs font-bold uppercase mb-4">Cuartos de Final</div>
+                                        {bracket.quarterfinals.map(m => <MatchCard key={m.id} match={m} onClick={setSelectedMatch} />)}
+                                    </div>
+                                    <div className="round-column justify-around">
+                                        <div className="text-center text-slate-500 text-xs font-bold uppercase mb-4">Semifinal</div>
+                                        {bracket.semifinals.map(m => <MatchCard key={m.id} match={m} onClick={setSelectedMatch} />)}
+                                    </div>
+                                    <div className="round-column justify-center">
+                                        <div className="text-center text-yellow-500 text-xs font-bold uppercase mb-4 glow-text">Gran Final</div>
+                                        {bracket.finals.map(m => (
+                                            <div key={m.id} className="flex flex-col items-center gap-4">
+                                                <div className="text-4xl animate-bounce">🏆</div>
+                                                <MatchCard match={m} onClick={setSelectedMatch} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                    <EditModal match={selectedMatch} isOpen={!!selectedMatch} onClose={() => setSelectedMatch(null)} onSave={handleUpdate} />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

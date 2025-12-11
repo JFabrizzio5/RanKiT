@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RankIT - Neon City Cup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Chakra Petch', 'sans-serif'] },
+                    colors: {
+                        brand: { dark: '#0B0C15', purple: '#7C3AED', cyan: '#06B6D4', surface: '#151725', gold: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B0C15; color: white; }
+        .glass-nav { background: rgba(11, 12, 21, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glass-panel { background: #151725; border: 1px solid rgba(255,255,255,0.05); }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(11, 12, 21, 0) 0%, #0B0C15 100%); }
+        
+        /* Rank Cards */
+        .rank-card { transition: all 0.3s ease; }
+        .rank-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2); }
+
+        /* Tabs */
+        .tab-btn.active { border-bottom: 3px solid #06B6D4; color: white; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-[#0B0C15] min-h-screen font-sans">
+
+    <!-- Navbar -->
+    <nav class="glass-nav fixed w-full z-50 h-16 flex items-center justify-between px-6 lg:px-12">
+        <div class="flex items-center gap-2">
+            <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none">
+                <path d="M20 80 L50 50 L80 20" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" />
+                <circle cx="20" cy="80" r="10" fill="#06B6D4" />
+                <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="#7C3AED" />
+            </svg>
+            <span class="font-display font-bold text-xl tracking-wider">RANK<span class="text-brand-cyan">IT</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="#" class="text-gray-400 hover:text-white text-sm font-bold">Volver a Torneos</a>
+            <div class="h-6 w-px bg-gray-800"></div>
+            <div class="flex items-center gap-2">
+                <img src="https://i.pravatar.cc/150?img=12" class="w-8 h-8 rounded-full border border-gray-700">
+                <span class="text-sm font-bold hidden sm:block">xSlayer99</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-[450px] flex items-end">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 hero-gradient"></div>
+        </div>
+        
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col gap-6">
+            <!-- Header Content -->
+            <div class="flex flex-col md:flex-row items-end justify-between gap-6 pb-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="bg-brand-purple text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Temporada 5</span>
+                        <span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><img src="https://img.icons8.com/color/48/valorant.png" class="w-3 h-3"> Valorant</span>
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-display font-bold text-white mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">NEON CITY CUP</h1>
+                    <p class="text-gray-400 max-w-xl text-sm md:text-base">El torneo amateur más grande de la región. Demuestra tu habilidad táctica y compite por el gran premio.</p>
+                </div>
+                
+                <div class="flex gap-4 text-center">
+                    <div class="glass-panel p-3 rounded-lg min-w-[100px]">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Prize Pool</div>
+                        <div class="text-xl font-display font-bold text-brand-cyan">$10,000 MXN</div>
+                    </div>
+                    <div class="glass-panel p-3 rounded-lg min-w-[100px]">
+                        <div class="text-xs text-gray-500 uppercase font-bold">Equipos</div>
+                        <div class="text-xl font-display font-bold text-white">16/32</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="flex border-b border-gray-800">
+                <button onclick="switchTab('detalles')" id="tab-detalles" class="tab-btn active px-6 py-3 text-sm font-bold text-gray-400 hover:text-white transition flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Detalles e Inscripción
+                </button>
+                <button onclick="switchTab('comunidad')" id="tab-comunidad" class="tab-btn px-6 py-3 text-sm font-bold text-gray-400 hover:text-white transition flex items-center gap-2 relative">
+                    <i class="fas fa-video"></i> En Vivo & Comunidad
+                    <span class="absolute top-2 right-2 flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-8 min-h-[600px]">
+
+        <!-- VISTA 1: DETALLES E INSCRIPCIÓN -->
+        <div id="view-detalles" class="tab-content active">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <!-- Left Column: Hall of Fame & Avisos -->
+                <div class="lg:col-span-2 space-y-12">
+                    
+                    <!-- Rankings Anteriores -->
+                    <section>
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="font-display text-2xl font-bold flex items-center gap-2">
+                                <i class="fas fa-trophy text-brand-gold"></i> Campeones Anteriores
+                            </h2>
+                            <a href="#" class="text-xs text-gray-500 hover:text-white transition">Ver historial</a>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 2nd Place -->
+                            <div class="rank-card glass-panel p-6 rounded-xl relative mt-4 border-t-4 border-gray-400 text-center">
+                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-xs font-bold shadow-lg">2nd Place</div>
+                                <img src="https://i.pravatar.cc/150?img=60" class="w-16 h-16 rounded-full border-2 border-gray-400 mb-3 mx-auto">
+                                <h3 class="font-bold text-white">Team Silver</h3>
+                                <div class="mt-3 text-sm font-mono text-gray-400">$2,500</div>
+                            </div>
+                            <!-- 1st Place -->
+                            <div class="rank-card glass-panel p-6 rounded-xl relative border-t-4 border-brand-gold bg-gradient-to-b from-yellow-900/10 to-transparent transform md:-translate-y-4 z-10 text-center">
+                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-gold text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                                    <i class="fas fa-crown"></i> CAMPEÓN
+                                </div>
+                                <img src="https://i.pravatar.cc/150?img=11" class="w-20 h-20 rounded-full border-4 border-brand-gold mb-3 mx-auto shadow-[0_0_15px_rgba(251,191,36,0.3)]">
+                                <h3 class="font-bold text-xl text-white">Crimson Kings</h3>
+                                <div class="mt-3 text-lg font-mono font-bold text-white">$5,000</div>
+                            </div>
+                            <!-- 3rd Place -->
+                            <div class="rank-card glass-panel p-6 rounded-xl relative mt-4 border-t-4 border-orange-700 text-center">
+                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-900 text-orange-200 px-3 py-1 rounded-full text-xs font-bold shadow-lg">3rd Place</div>
+                                <img src="https://i.pravatar.cc/150?img=33" class="w-16 h-16 rounded-full border-2 border-orange-700 mb-3 mx-auto">
+                                <h3 class="font-bold text-white">Bronze Boys</h3>
+                                <div class="mt-3 text-sm font-mono text-gray-400">$1,000</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Feed de Avisos -->
+                    <section>
+                        <h2 class="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-bullhorn text-brand-cyan"></i> Tablón de Avisos
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-red-500 flex gap-4">
+                                <div class="w-10 h-10 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation"></i></div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-sm font-bold text-white">Map Pool Actualizado</span>
+                                        <span class="text-[10px] text-gray-500 bg-black/30 px-2 py-0.5 rounded">Hace 2 horas</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">Fracture ha sido eliminado de la rotación debido a bugs. Será reemplazado por Pearl.</p>
+                                </div>
+                            </div>
+                            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-brand-purple flex gap-4">
+                                <div class="w-10 h-10 bg-brand-purple/20 text-brand-purple rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-info"></i></div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-sm font-bold text-white">Check-in</span>
+                                        <span class="text-[10px] text-gray-500 bg-black/30 px-2 py-0.5 rounded">Ayer</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">Check-in abre 60 mins antes de la partida. No olviden confirmar asistencia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column: Registration -->
+                <aside class="space-y-8">
+                    <div class="glass-panel p-6 rounded-2xl border border-brand-cyan/30 shadow-[0_0_30px_-10px_rgba(6,182,212,0.15)]">
+                        <div class="text-center mb-6">
+                            <div class="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3 animate-pulse">
+                                <i class="fas fa-circle text-[8px] mr-1"></i> INSCRIPCIONES ABIERTAS
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">¿Listo para competir?</h3>
+                            <p class="text-sm text-gray-400">Quedan <span class="text-white font-bold">16 cupos</span> disponibles.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <button class="w-full bg-brand-cyan hover:bg-cyan-400 text-black font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-pen-fancy"></i> Inscribir Equipo
+                            </button>
+                            <button class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                                <i class="fas fa-user-plus"></i> Buscar Equipo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-white text-sm uppercase">Equipos Inscritos</h3>
+                            <i class="fas fa-users text-gray-600"></i>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-purple-900 rounded flex items-center justify-center font-bold text-xs">VL</div>
+                                    <div class="text-sm font-bold text-gray-200">Violet Lightning</div>
+                                </div>
+                                <span class="text-[10px] text-green-400 bg-green-900/20 px-2 py-0.5 rounded">Verificado</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-900 rounded flex items-center justify-center font-bold text-xs">SK</div>
+                                    <div class="text-sm font-bold text-gray-200">Sky High</div>
+                                </div>
+                                <span class="text-[10px] text-gray-500">Pendiente</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- VISTA 2: COMUNIDAD & FEED (NUEVA) -->
+        <div id="view-comunidad" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Main Stream Area (Left - 8 cols) -->
+                <div class="lg:col-span-8 space-y-8">
+                    
+                    <!-- Stream Embed -->
+                    <div class="glass-panel p-1 rounded-xl overflow-hidden shadow-2xl shadow-purple-900/20">
+                        <div class="bg-black/50 p-2 flex justify-between items-center border-b border-gray-800 mb-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
+                                <span class="text-xs font-bold text-white uppercase tracking-wider">Transmisión Oficial</span>
+                            </div>
+                            <span class="text-xs text-gray-500"><i class="fas fa-eye"></i> 1,240 Viendo</span>
+                        </div>
+                        <!-- Placeholder for Twitch/YouTube Embed -->
+                        <div class="aspect-video bg-black flex items-center justify-center relative group cursor-pointer">
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-40 transition">
+                            <div class="z-10 text-center">
+                                <div class="w-16 h-16 rounded-full bg-brand-purple hover:bg-purple-500 flex items-center justify-center text-white text-2xl transition transform hover:scale-110 mb-2 mx-auto">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <p class="text-sm font-bold text-white">Ver en Twitch</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feed Header -->
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-display text-2xl font-bold flex items-center gap-2">
+                            <i class="fas fa-hashtag text-brand-cyan"></i> Clips de la Comunidad
+                        </h2>
+                        <button class="bg-brand-surface hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold border border-gray-700 transition flex items-center gap-2">
+                            <i class="fas fa-upload text-brand-cyan"></i> Subir Clip
+                        </button>
+                    </div>
+
+                    <!-- Video Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Clip Card 1 -->
+                        <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
+                            <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
+                                <img src="https://images.unsplash.com/photo-1624138784181-2999e4253b85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+                                <div class="absolute bottom-2 left-2 right-2">
+                                    <p class="text-sm font-bold text-white truncate">Clutch 1v4 imposible! 🤯</p>
+                                    <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+                                        <span><i class="fas fa-heart text-red-500"></i> 450</span>
+                                        <span>@Slayer99</span>
+                                    </div>
+                                </div>
+                                <div class="absolute top-2 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">0:45</div>
+                            </div>
+                        </div>
+
+                        <!-- Clip Card 2 -->
+                        <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
+                            <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
+                                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+                                <div class="absolute bottom-2 left-2 right-2">
+                                    <p class="text-sm font-bold text-white truncate">Final Match Point 🏆</p>
+                                    <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+                                        <span><i class="fas fa-heart text-red-500"></i> 1.2k</span>
+                                        <span>@OfficialCast</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clip Card 3 -->
+                        <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
+                            <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
+                                <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+                                <div class="absolute bottom-2 left-2 right-2">
+                                    <p class="text-sm font-bold text-white truncate">Funny Fails Compilation</p>
+                                    <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
+                                        <span><i class="fas fa-heart text-red-500"></i> 89</span>
+                                        <span>@NoobMaster</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Chat / Activity (Right - 4 cols) -->
+                <div class="lg:col-span-4 space-y-6">
+                    <!-- Live Chat Simulation -->
+                    <div class="glass-panel rounded-xl overflow-hidden flex flex-col h-[500px]">
+                        <div class="bg-gray-900/50 p-3 border-b border-gray-700 font-bold text-xs text-white flex justify-between">
+                            <span>CHAT DEL TORNEO</span>
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                        </div>
+                        <div class="flex-1 p-3 overflow-y-auto space-y-3 custom-scroll">
+                            <div class="text-xs"><span class="font-bold text-brand-cyan">User123:</span> ¡Qué jugada! 🔥</div>
+                            <div class="text-xs"><span class="font-bold text-purple-400">Mod_Alex:</span> Respeto en el chat por favor.</div>
+                            <div class="text-xs"><span class="font-bold text-yellow-500">FanBoy:</span> ¿Cuándo juega Team Silver?</div>
+                            <div class="text-xs"><span class="font-bold text-gray-300">PlayerOne:</span> GG WP</div>
+                            <div class="text-xs"><span class="font-bold text-brand-cyan">User123:</span> OMG ese tiro</div>
+                            <div class="text-xs"><span class="font-bold text-red-400">Hater99:</span> Lag...</div>
+                        </div>
+                        <div class="p-3 border-t border-gray-700">
+                            <input type="text" placeholder="Enviar mensaje..." class="w-full bg-black/50 border border-gray-600 rounded px-3 py-2 text-xs text-white outline-none focus:border-brand-cyan">
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h4 class="font-bold text-sm mb-3">Síguenos</h4>
+                        <div class="flex justify-between gap-2">
+                            <button class="flex-1 bg-[#5865F2] hover:opacity-90 py-2 rounded text-white text-xs font-bold"><i class="fab fa-discord"></i> Discord</button>
+                            <button class="flex-1 bg-[#1DA1F2] hover:opacity-90 py-2 rounded text-white text-xs font-bold"><i class="fab fa-twitter"></i> Twitter</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 mt-12 py-8 bg-[#0F1019]">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-500 text-xs">
+            <p>&copy; 2025 RankIT Platform. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Logic for Tabs -->
+    <script>
+        function switchTab(tabId) {
+            // Remove active class from buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activate selected
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('view-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
