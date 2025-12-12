@@ -29,4 +29,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   REDIS_PORT: Env.schema.number(),
   REDIS_PASSWORD: Env.schema.string.optional(),
   MONGO_URL: Env.schema.string(),
+  // Stripe API keys
+  STRIPE_SECRET_KEY: Env.schema.string(),
+  STRIPE_PUBLISHABLE_KEY: Env.schema.string(),
+  STRIPE_CLIENT_ID: Env.schema.string(),
 })

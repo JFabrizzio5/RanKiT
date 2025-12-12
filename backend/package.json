@@ -61,7 +61,8 @@
     "@vinejs/vine": "^3.0.1",
     "edge.js": "^6.2.1",
     "mongoose": "^9.0.1",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "stripe": "^20.0.0"
   },
   "hotHook": {
     "boundaries": [
