@@ -1,30 +1,84 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
-const activeTab = ref('detalles')
+const activeTab = ref('bracket') 
 const switchTab = (tab) => activeTab.value = tab
-
-// Canal solicitado (Fijo como pediste)
 const twitchChannel = 'Jelty' 
 
-onMounted(() => {
-    // Función para inicializar el Player una vez cargado el script
-    const initPlayer = () => {
-        if (window.Twitch) {
-            // Limpiar contenido previo si existe
-            const embedContainer = document.getElementById('twitch-embed');
-            if (embedContainer) embedContainer.innerHTML = '';
+// --- LÓGICA DE TIEMPO (Cuenta Regresiva) ---
+const timeLeft = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+const targetDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000)
 
+// --- DATOS DE ENGAGEMENT (Drops) ---
+const watchProgress = ref(65)
+
+// --- DATOS DEL BRACKET CON PREDICCIONES (AI) ---
+const bracketRounds = ref([
+    {
+        name: "Cuartos",
+        matches: [
+            { id: 1, p1: "Team Liquid", p2: "Cloud9", s1: 2, s2: 0, status: "finished", winner: 'p1', prediction: 85 },
+            { id: 2, p1: "Sentinels", p2: "100 Thieves", s1: 1, s2: 2, status: "finished", winner: 'p2', prediction: 45 },
+            { id: 3, p1: "Fnatic", p2: "G2 Esports", s1: 1, s2: 0, status: "live", isBo3: true, prediction: 52 },
+            { id: 4, p1: "KRÜ", p2: "Leviatán", s1: 0, s2: 0, status: "scheduled", prediction: 60 },
+        ]
+    },
+    {
+        name: "Semis",
+        matches: [
+            { id: 5, p1: "Team Liquid", p2: "100 Thieves", s1: 0, s2: 0, status: "scheduled", prediction: 70 },
+            { id: 6, p1: "TBD", p2: "TBD", s1: 0, s2: 0, status: "scheduled" },
+        ]
+    },
+    {
+        name: "Final",
+        matches: [
+            { id: 7, p1: "TBD", p2: "TBD", s1: 0, s2: 0, status: "scheduled", isFinal: true },
+        ]
+    }
+])
+
+// --- SPONSORS ---
+const sponsors = [
+    { name: 'Red Bull', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Red_Bull_GmbH_logo.svg/1200px-Red_Bull_GmbH_logo.svg.png' },
+    { name: 'Intel', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/1200px-Intel-logo.svg.png' },
+    { name: 'Logitech G', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logitech_logo.svg/2560px-Logitech_logo.svg.png' },
+    { name: 'Secretlab', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Secretlab_Logo_2020.png' },
+    { name: 'Prime Gaming', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Gaming_logo.svg' },
+    { name: 'Monster Energy', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/13/Monster_Energy_logo.svg' }
+]
+
+// --- PRIZE POOL BREAKDOWN ---
+const prizeDistribution = [
+    { place: '1st', amount: '$15,000', percent: 60, color: 'bg-yellow-500' },
+    { place: '2nd', amount: '$7,000', percent: 28, color: 'bg-gray-400' },
+    { place: '3rd', amount: '$3,000', percent: 12, color: 'bg-orange-700' },
+]
+
+onMounted(() => {
+    // Timer
+    const timerInterval = setInterval(() => {
+        const now = new Date().getTime()
+        const distance = targetDate - now
+        if(distance < 0) { clearInterval(timerInterval); return; }
+        
+        timeLeft.value.days = Math.floor(distance / (1000 * 60 * 60 * 24))
+        timeLeft.value.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        timeLeft.value.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+        timeLeft.value.seconds = Math.floor((distance % (1000 * 60)) / 1000)
+    }, 1000)
+
+    // Twitch Embed Logic
+    const initPlayer = () => {
+        if (window.Twitch && !document.getElementById('twitch-embed').firstChild) {
             new window.Twitch.Player("twitch-embed", {
                 channel: twitchChannel,
                 width: "100%",
                 height: "100%",
-                parent: ["localhost"] // Cambia esto en producción
+                parent: ["localhost"] 
             });
         }
     }
-
-    // Cargar script de Twitch si no existe
     if (!document.getElementById('twitch-embed-script')) {
         const script = document.createElement('script');
         script.setAttribute('id', 'twitch-embed-script');
@@ -32,314 +86,402 @@ onMounted(() => {
         script.onload = initPlayer;
         document.head.appendChild(script);
     } else {
-        setTimeout(initPlayer, 500); 
+        setTimeout(initPlayer, 1000); 
     }
 })
 </script>
 
 <template>
-  <div class="bg-[#0B0C15] min-h-screen font-sans text-white">
+  <div class="bg-[#0B0C15] min-h-screen font-sans text-white pb-24 overflow-x-hidden">
     <TheNavbar />
 
-    <!-- Hero Header -->
-    <header class="relative h-[450px] flex items-end pt-20">
+    <!-- HERO SECTION MEJORADO (Responsive & Safe Zones) -->
+    <header class="relative min-h-[600px] h-auto flex items-end pt-24 overflow-hidden group pb-20">
+        
+        <!-- Background Layer -->
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover opacity-40">
-            <div class="absolute inset-0 hero-gradient"></div>
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+                 class="w-full h-full object-cover opacity-30 transform scale-105 group-hover:scale-110 transition duration-[30s] ease-linear">
+            <!-- Overlay Gradiente -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0B0C15] via-[#0B0C15]/60 to-[#0B0C15]/40"></div>
+            <!-- Texture Overlay -->
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div>
         </div>
         
-        <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col gap-6">
-            <div class="flex flex-col md:flex-row items-end justify-between gap-6 pb-4">
-                <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="bg-brand-purple text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Temporada 5</span>
-                        <span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                            <img src="https://img.icons8.com/color/48/valorant.png" class="w-3 h-3"> Valorant
-                        </span>
-                    </div>
-                    <h1 class="text-4xl md:text-6xl font-display font-bold text-white mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">NEON CITY CUP</h1>
-                    <p class="text-gray-400 max-w-xl text-sm md:text-base">El torneo amateur más grande de la región. Demuestra tu habilidad táctica y compite por el gran premio.</p>
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col gap-8">
+            <!-- Badges -->
+            <div class="flex flex-wrap items-center gap-3 animate-fade-in-up">
+                <span class="bg-red-600/90 backdrop-blur-sm text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-white rounded-full"></span> En Vivo
+                </span>
+                <span class="bg-white/5 backdrop-blur-md border border-white/10 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-white/10 transition cursor-default">
+                    <i class="fas fa-gamepad text-brand-cyan"></i> Valorant
+                </span>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-end justify-between gap-10">
+                <!-- Title & Description -->
+                <div class="max-w-3xl animate-fade-in-up delay-100 relative">
+                    <h1 class="text-4xl md:text-5xl lg:text-7xl font-display font-bold text-white mb-4 leading-none text-shadow-xl tracking-tight">
+                        NEON CITY <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-white to-brand-purple">CHAMPIONSHIP</span>
+                    </h1>
+                    <p class="text-gray-300 text-base md:text-lg font-light max-w-xl border-l-4 border-brand-cyan pl-6 py-1 bg-gradient-to-r from-brand-cyan/5 to-transparent">
+                        El escenario definitivo. 16 equipos, un solo trofeo y la gloria eterna en el torneo más grande de LATAM.
+                    </p>
                 </div>
                 
-                <div class="flex gap-4 text-center">
-                    <div class="glass-panel p-3 rounded-lg min-w-[100px]">
-                        <div class="text-xs text-gray-500 uppercase font-bold">Prize Pool</div>
-                        <div class="text-xl font-display font-bold text-brand-cyan">$10,000 MXN</div>
+                <!-- Countdown & Action Widget -->
+                <div class="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-4 animate-fade-in-up delay-200">
+                    <!-- Timer -->
+                    <div class="glass-panel p-4 rounded-xl border-t-2 border-brand-cyan bg-[#151725]/60 backdrop-blur-xl flex flex-col items-center shadow-2xl flex-1">
+                        <div class="text-[10px] text-brand-cyan uppercase font-bold mb-2 tracking-widest">Inscripciones Cierran En</div>
+                        <div class="flex gap-4 items-center font-mono">
+                            <div class="text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-white leading-none">{{ timeLeft.days }}</div>
+                                <div class="text-[8px] text-gray-500 uppercase">Días</div>
+                            </div>
+                            <span class="text-gray-600 font-bold">:</span>
+                            <div class="text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-white leading-none">{{ timeLeft.hours }}</div>
+                                <div class="text-[8px] text-gray-500 uppercase">Hrs</div>
+                            </div>
+                            <span class="text-gray-600 font-bold">:</span>
+                            <div class="text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-white leading-none">{{ timeLeft.minutes }}</div>
+                                <div class="text-[8px] text-gray-500 uppercase">Min</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-panel p-3 rounded-lg min-w-[100px]">
-                        <div class="text-xs text-gray-500 uppercase font-bold">Equipos</div>
-                        <div class="text-xl font-display font-bold text-white">16/32</div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex gap-3 flex-1">
+                        <div class="glass-panel px-4 py-2 rounded-xl text-center flex-1 flex flex-col justify-center bg-[#151725]/60 backdrop-blur-xl">
+                            <div class="text-[9px] text-gray-500 uppercase font-bold">Prize Pool</div>
+                            <div class="text-lg md:text-xl font-display font-bold text-green-400 drop-shadow-sm">$25,000</div>
+                        </div>
+                        <button class="bg-gradient-to-r from-brand-cyan to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-bold py-3 px-6 rounded-xl transition shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(6,182,212,0.6)] transform hover:-translate-y-1 flex-1 whitespace-nowrap">
+                            INSCRIBIRSE
+                            <span class="block text-[9px] opacity-70 font-normal mt-0.5">Cupos Limitados</span>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="flex border-b border-gray-800">
-                <button @click="switchTab('detalles')" :class="['px-6 py-3 text-sm font-bold transition flex items-center gap-2 border-b-3', activeTab === 'detalles' ? 'border-brand-cyan text-white' : 'border-transparent text-gray-400 hover:text-white']">
-                    <i class="fas fa-info-circle"></i> Detalles e Inscripción
-                </button>
-                <button @click="switchTab('comunidad')" :class="['px-6 py-3 text-sm font-bold transition flex items-center gap-2 border-b-3 relative', activeTab === 'comunidad' ? 'border-brand-cyan text-white' : 'border-transparent text-gray-400 hover:text-white']">
-                    <i class="fas fa-video"></i> En Vivo & Comunidad
-                    <span class="absolute top-2 right-2 flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                    </span>
-                </button>
+        <!-- INFINITE SPONSORS MARQUEE -->
+        <div class="absolute bottom-0 w-full h-14 bg-black/80 border-t border-white/5 backdrop-blur-md flex items-center z-20 overflow-hidden">
+            <div class="flex items-center gap-16 animate-marquee whitespace-nowrap pl-16">
+                <!-- Duplicamos la lista para el efecto infinito -->
+                <img v-for="(sponsor, i) in [...sponsors, ...sponsors, ...sponsors]" :key="i" :src="sponsor.logo" class="h-6 w-auto object-contain opacity-40 hover:opacity-100 transition duration-300 grayscale hover:grayscale-0 filter" :alt="sponsor.name">
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-8 min-h-[600px]">
-        
-        <!-- VISTA 1: DETALLES E INSCRIPCIÓN -->
-        <div v-show="activeTab === 'detalles'" class="animate-fade-in">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                
-                <!-- Columna Izquierda: Hall of Fame & Avisos -->
-                <div class="lg:col-span-2 space-y-12">
-                    
-                    <!-- Rankings Anteriores (Podio Completo) -->
-                    <section>
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="font-display text-2xl font-bold flex items-center gap-2">
-                                <i class="fas fa-trophy text-yellow-500"></i> Campeones Anteriores
-                            </h2>
-                            <a href="#" class="text-xs text-gray-500 hover:text-white transition">Ver historial completo</a>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                            <!-- 2nd Place -->
-                            <div class="glass-panel p-6 rounded-xl relative border-t-4 border-gray-400 text-center transform hover:-translate-y-2 transition duration-300">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-xs font-bold shadow-lg">2nd Place</div>
-                                <img src="https://i.pravatar.cc/150?img=60" class="w-16 h-16 rounded-full border-2 border-gray-400 mb-3 mx-auto">
-                                <h3 class="font-bold text-white">Team Silver</h3>
-                                <div class="mt-3 text-sm font-mono text-gray-400">$2,500</div>
-                            </div>
-                            
-                            <!-- 1st Place -->
-                            <div class="glass-panel p-6 rounded-xl relative border-t-4 border-yellow-500 bg-gradient-to-b from-yellow-900/10 to-transparent text-center z-10 md:-translate-y-4 transform hover:-translate-y-6 transition duration-300 shadow-[0_0_30px_rgba(234,179,8,0.1)]">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                                    <i class="fas fa-crown"></i> CAMPEÓN
-                                </div>
-                                <img src="https://i.pravatar.cc/150?img=11" class="w-20 h-20 rounded-full border-4 border-yellow-500 mb-3 mx-auto shadow-[0_0_15px_rgba(251,191,36,0.3)]">
-                                <h3 class="font-bold text-xl text-white">Crimson Kings</h3>
-                                <div class="mt-3 text-lg font-mono font-bold text-white">$5,000</div>
-                            </div>
-                            
-                            <!-- 3rd Place -->
-                            <div class="glass-panel p-6 rounded-xl relative border-t-4 border-orange-700 text-center transform hover:-translate-y-2 transition duration-300">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-900 text-orange-200 px-3 py-1 rounded-full text-xs font-bold shadow-lg">3rd Place</div>
-                                <img src="https://i.pravatar.cc/150?img=33" class="w-16 h-16 rounded-full border-2 border-orange-700 mb-3 mx-auto">
-                                <h3 class="font-bold text-white">Bronze Boys</h3>
-                                <div class="mt-3 text-sm font-mono text-gray-400">$1,000</div>
-                            </div>
-                        </div>
-                    </section>
+    <!-- Navigation Tabs (Sticky) -->
+    <div class="sticky top-0 lg:top-16 z-40 bg-[#0B0C15]/90 backdrop-blur-lg border-b border-white/5 shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 flex gap-8 overflow-x-auto no-scrollbar">
+            <button v-for="tab in ['bracket', 'detalles', 'comunidad', 'reglas']" :key="tab"
+                    @click="switchTab(tab)" 
+                    class="py-5 text-xs font-bold uppercase tracking-widest border-b-2 transition duration-300 whitespace-nowrap flex items-center gap-2 group"
+                    :class="activeTab === tab ? 'border-brand-cyan text-white' : 'border-transparent text-gray-500 hover:text-white'">
+                <i v-if="tab === 'bracket'" class="fas fa-sitemap group-hover:text-brand-cyan transition"></i>
+                <i v-if="tab === 'detalles'" class="fas fa-info-circle group-hover:text-brand-cyan transition"></i>
+                <i v-if="tab === 'comunidad'" class="fas fa-users group-hover:text-brand-cyan transition"></i>
+                <i v-if="tab === 'reglas'" class="fas fa-book group-hover:text-brand-cyan transition"></i>
+                {{ tab }}
+            </button>
+        </div>
+    </div>
 
-                    <!-- Feed de Avisos -->
-                    <section>
-                        <h2 class="font-display text-2xl font-bold mb-6 flex items-center gap-2">
-                            <i class="fas fa-bullhorn text-brand-cyan"></i> Tablón de Avisos
-                        </h2>
-                        <div class="space-y-4">
-                            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-red-500 flex gap-4 hover:bg-white/5 transition">
-                                <div class="w-10 h-10 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation"></i></div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-sm font-bold text-white">Map Pool Actualizado</span>
-                                        <span class="text-[10px] text-gray-500 bg-black/30 px-2 py-0.5 rounded">Hace 2 horas</span>
-                                    </div>
-                                    <p class="text-sm text-gray-400">Fracture ha sido eliminado de la rotación debido a bugs. Será reemplazado por Pearl para esta fase.</p>
-                                </div>
-                            </div>
-                            <div class="glass-panel p-5 rounded-xl border-l-4 border-l-brand-purple flex gap-4 hover:bg-white/5 transition">
-                                <div class="w-10 h-10 bg-brand-purple/20 text-brand-purple rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-info"></i></div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-sm font-bold text-white">Check-in Obligatorio</span>
-                                        <span class="text-[10px] text-gray-500 bg-black/30 px-2 py-0.5 rounded">Ayer</span>
-                                    </div>
-                                    <p class="text-sm text-gray-400">El Check-in abre 60 minutos antes de la partida. Capitanes, no olviden confirmar asistencia.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-10 min-h-[600px]">
+        
+        <!-- === VISTA: BRACKET INTERACTIVO === -->
+        <div v-if="activeTab === 'bracket'" class="animate-fade-in space-y-10">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-white">Playoffs Stage</h2>
+                    <p class="text-gray-500 text-sm mt-1">Haz clic en un match para ver estadísticas detalladas.</p>
                 </div>
-                
-                <!-- Columna Derecha: Inscripción & Equipos -->
-                <aside class="space-y-8">
-                    <!-- Inscripción -->
-                    <div class="glass-panel p-6 rounded-2xl border border-brand-cyan/30 shadow-[0_0_30px_-10px_rgba(6,182,212,0.15)]">
-                        <div class="text-center mb-6">
-                            <div class="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3 animate-pulse">
-                                <i class="fas fa-circle text-[8px] mr-1"></i> INSCRIPCIONES ABIERTAS
+                <!-- Leyenda -->
+                <div class="flex gap-4 text-xs bg-black/30 p-2 rounded-lg border border-white/5 overflow-x-auto">
+                    <span class="flex items-center gap-2 text-gray-400 whitespace-nowrap"><span class="w-2 h-2 rounded-full bg-gray-600"></span> Finalizado</span>
+                    <span class="flex items-center gap-2 text-red-400 font-bold whitespace-nowrap"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> En Vivo</span>
+                    <span class="flex items-center gap-2 text-brand-cyan font-bold whitespace-nowrap"><i class="fas fa-robot"></i> AI Prediction</span>
+                </div>
+            </div>
+
+            <!-- Bracket Canvas -->
+            <div class="overflow-x-auto pb-12 custom-scroll">
+                <div class="flex gap-16 min-w-max px-4 pt-8">
+                    <div v-for="(round, rIndex) in bracketRounds" :key="rIndex" class="flex flex-col justify-around gap-8 relative">
+                        <h3 class="absolute -top-10 left-0 w-full text-center text-xs font-bold text-brand-cyan uppercase tracking-[0.2em] opacity-80 bg-brand-cyan/5 py-1 rounded">{{ round.name }}</h3>
+                        
+                        <div v-for="match in round.matches" :key="match.id" class="relative group perspective-container">
+                            
+                            <!-- Connector Lines (Visual Polish) -->
+                            <div v-if="!match.isFinal" class="hidden md:block absolute -right-8 top-1/2 w-8 h-0.5 bg-gray-800 group-hover:bg-gray-700 transition"></div>
+                            <div v-if="!match.isFinal && rIndex < bracketRounds.length - 1" 
+                                 class="hidden md:block absolute -right-8 w-0.5 bg-gray-800 group-hover:bg-gray-700 transition"
+                                 :class="match.id % 2 !== 0 ? 'top-1/2 h-[calc(50%+2rem)] border-t-0 rounded-tr-xl' : 'bottom-1/2 h-[calc(50%+2rem)] border-b-0 rounded-br-xl'">
                             </div>
-                            <h3 class="text-xl font-bold text-white mb-2">¿Listo para competir?</h3>
-                            <p class="text-sm text-gray-400">Quedan <span class="text-white font-bold">16 cupos</span> disponibles.</p>
-                        </div>
-                        <div class="space-y-3">
-                            <button class="w-full bg-brand-cyan hover:bg-cyan-400 text-black font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]">
-                                <i class="fas fa-pen-fancy"></i> Inscribir Equipo
-                            </button>
-                            <button class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                                <i class="fas fa-user-plus"></i> Buscar Equipo
-                            </button>
+
+                            <!-- Match Card -->
+                            <div class="w-64 md:w-72 bg-[#151725] rounded-xl border border-white/5 overflow-hidden transition-all duration-300 shadow-lg relative hover:-translate-y-1 hover:border-brand-purple/40 hover:shadow-[0_10px_30px_-10px_rgba(124,58,237,0.2)]"
+                                 :class="{'ring-1 ring-red-500 shadow-red-900/20': match.status === 'live'}">
+                                
+                                <!-- Header Card -->
+                                <div class="bg-black/40 px-3 py-2 flex justify-between items-center border-b border-white/5">
+                                    <div class="flex gap-2">
+                                        <span v-if="match.status === 'live'" class="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded animate-pulse">LIVE</span>
+                                        <span v-else class="text-[10px] text-gray-500 uppercase font-bold">{{ match.status }}</span>
+                                        <span v-if="match.isBo3" class="bg-white/10 text-gray-300 text-[9px] font-bold px-1.5 py-0.5 rounded border border-white/5">BO3</span>
+                                    </div>
+                                    <!-- AI Prediction Badge -->
+                                    <div v-if="match.prediction" class="flex items-center gap-1 text-[10px] text-brand-cyan opacity-0 group-hover:opacity-100 transition">
+                                        <i class="fas fa-brain"></i> {{ match.prediction }}% Win Prob
+                                    </div>
+                                </div>
+
+                                <!-- Teams -->
+                                <div class="p-1">
+                                    <!-- Team 1 -->
+                                    <div class="flex justify-between items-center p-2 md:p-3 rounded hover:bg-white/5 transition" 
+                                         :class="{'opacity-50': match.winner === 'p2', 'bg-gradient-to-r from-green-500/10 to-transparent': match.winner === 'p1'}">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-6 h-6 md:w-8 md:h-8 rounded bg-gray-800 flex items-center justify-center text-[10px] text-gray-500 font-bold border border-white/10">IMG</div>
+                                            <span class="text-xs md:text-sm font-bold truncate max-w-[120px]" :class="match.winner === 'p1' ? 'text-white' : 'text-gray-400'">{{ match.p1 }}</span>
+                                        </div>
+                                        <span class="font-mono font-bold text-base md:text-lg" :class="match.winner === 'p1' ? 'text-green-400' : 'text-gray-600'">{{ match.s1 }}</span>
+                                    </div>
+
+                                    <!-- Team 2 -->
+                                    <div class="flex justify-between items-center p-2 md:p-3 rounded hover:bg-white/5 transition"
+                                         :class="{'opacity-50': match.winner === 'p1', 'bg-gradient-to-r from-green-500/10 to-transparent': match.winner === 'p2'}">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-6 h-6 md:w-8 md:h-8 rounded bg-gray-800 flex items-center justify-center text-[10px] text-gray-500 font-bold border border-white/10">IMG</div>
+                                            <span class="text-xs md:text-sm font-bold truncate max-w-[120px]" :class="match.winner === 'p2' ? 'text-white' : 'text-gray-400'">{{ match.p2 }}</span>
+                                        </div>
+                                        <span class="font-mono font-bold text-base md:text-lg" :class="match.winner === 'p2' ? 'text-green-400' : 'text-gray-600'">{{ match.s2 }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Equipos Inscritos -->
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-white text-sm uppercase">Equipos Inscritos</h3>
-                            <i class="fas fa-users text-gray-600"></i>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-brand-purple/50 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-purple-900 rounded flex items-center justify-center font-bold text-xs">VL</div>
-                                    <div class="text-sm font-bold text-gray-200">Violet Lightning</div>
-                                </div>
-                                <span class="text-[10px] text-green-400 bg-green-900/20 px-2 py-0.5 rounded border border-green-500/20">Verificado</span>
-                            </div>
-                            <div class="flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-brand-purple/50 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-blue-900 rounded flex items-center justify-center font-bold text-xs">SK</div>
-                                    <div class="text-sm font-bold text-gray-200">Sky High</div>
-                                </div>
-                                <span class="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded">Pendiente</span>
-                            </div>
-                             <div class="flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-brand-purple/50 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-red-900 rounded flex items-center justify-center font-bold text-xs">RD</div>
-                                    <div class="text-sm font-bold text-gray-200">Red Dragons</div>
-                                </div>
-                                <span class="text-[10px] text-green-400 bg-green-900/20 px-2 py-0.5 rounded border border-green-500/20">Verificado</span>
-                            </div>
-                        </div>
-                        <button class="w-full mt-4 text-xs text-gray-500 hover:text-white underline">Ver todos los equipos</button>
-                    </div>
-                </aside>
+                </div>
             </div>
         </div>
 
-        <!-- VISTA 2: COMUNIDAD & FEED -->
-        <div v-show="activeTab === 'comunidad'" class="animate-fade-in">
-             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                 
-                 <!-- Columna Principal: Stream y Clips -->
-                 <div class="lg:col-span-8 space-y-8">
-                     
-                    <!-- Stream Embed (JS API - INTACTO) -->
-                     <div class="glass-panel p-1 rounded-xl overflow-hidden shadow-2xl shadow-purple-900/20 border border-brand-purple/30">
-                         <div class="bg-black/50 p-2 flex justify-between items-center border-b border-gray-800 mb-1">
-                             <div class="flex items-center gap-2">
-                                 <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
-                                 <span class="text-xs font-bold text-white uppercase tracking-wider">Transmisión Oficial</span>
-                             </div>
-                             <span class="text-xs text-gray-500 flex items-center gap-1"><i class="fas fa-eye"></i> 1,240 Viendo</span>
-                         </div>
-                         <div class="aspect-video bg-black w-full relative">
-                             <!-- Contenedor del Player JS -->
-                             <div id="twitch-embed" class="w-full h-full absolute inset-0"></div>
-                         </div>
-                     </div>
-
-                     <!-- Feed de Clips (Restaurado del concepto) -->
-                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="font-display text-2xl font-bold flex items-center gap-2">
-                                <i class="fas fa-hashtag text-brand-cyan"></i> Clips de la Comunidad
-                            </h2>
-                            <button class="bg-[#151725] hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold border border-gray-700 transition flex items-center gap-2">
-                                <i class="fas fa-upload text-brand-cyan"></i> Subir Clip
-                            </button>
+        <!-- === VISTA: DETALLES === -->
+        <div v-if="activeTab === 'detalles'" class="animate-fade-in grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Columna Principal -->
+            <div class="lg:col-span-8 space-y-8">
+                <!-- Información General -->
+                <div class="glass-panel p-8 rounded-2xl bg-[#151725] border border-white/5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-brand-purple/10 rounded-full blur-[100px]"></div>
+                    <h3 class="font-bold text-2xl mb-4 text-white font-display">Información del Evento</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-8">
+                        Bienvenidos a la 5ta edición de la Neon City Cup. Este torneo reúne a los mejores equipos amateurs y semi-pro de la región.
+                        La competencia está diseñada para descubrir nuevos talentos y ofrecer un camino hacia el profesionalismo.
+                    </p>
+                    
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-black/40 p-4 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition text-center group">
+                            <i class="fas fa-users text-brand-cyan mb-2 text-xl group-hover:scale-110 transition"></i>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Formato</div>
+                            <div class="text-white font-bold">5v5 Draft</div>
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Clip 1 -->
-                            <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
-                                <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
-                                    <img src="https://images.unsplash.com/photo-1624138784181-2999e4253b85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-100 transition duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
-                                    <div class="absolute bottom-2 left-2 right-2">
-                                        <p class="text-sm font-bold text-white truncate">Clutch 1v4 imposible! 🤯</p>
-                                        <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
-                                            <span><i class="fas fa-heart text-red-500"></i> 450</span>
-                                            <span>@Slayer99</span>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">0:45</div>
-                                </div>
-                            </div>
-
-                            <!-- Clip 2 -->
-                            <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
-                                <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
-                                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-100 transition duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
-                                    <div class="absolute bottom-2 left-2 right-2">
-                                        <p class="text-sm font-bold text-white truncate">Final Match Point 🏆</p>
-                                        <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
-                                            <span><i class="fas fa-heart text-red-500"></i> 1.2k</span>
-                                            <span>@OfficialCast</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Clip 3 -->
-                            <div class="glass-panel p-2 rounded-xl group hover:border-brand-cyan/50 transition cursor-pointer">
-                                <div class="aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden relative mb-2">
-                                    <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-100 transition duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
-                                    <div class="absolute bottom-2 left-2 right-2">
-                                        <p class="text-sm font-bold text-white truncate">Funny Fails Compilation</p>
-                                        <div class="flex justify-between items-center text-xs text-gray-400 mt-1">
-                                            <span><i class="fas fa-heart text-red-500"></i> 89</span>
-                                            <span>@NoobMaster</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="bg-black/40 p-4 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition text-center group">
+                            <i class="fas fa-desktop text-brand-cyan mb-2 text-xl group-hover:scale-110 transition"></i>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Plataforma</div>
+                            <div class="text-white font-bold">PC / Win 11</div>
                         </div>
-                     </div>
-
-                 </div>
-                 
-                 <!-- Columna Derecha: Chat y Socials -->
-                 <div class="lg:col-span-4 space-y-6">
-                     <!-- Chat Container (INTACTO) -->
-                     <div class="glass-panel rounded-xl overflow-hidden h-[500px] border border-gray-700">
-                        <iframe
-                            id="chat_embed"
-                            :src="`https://www.twitch.tv/embed/${twitchChannel}/chat?parent=localhost&darkpopout`"
-                            height="100%"
-                            width="100%"
-                            class="w-full h-full"
-                        ></iframe>
-                     </div>
-
-                     <!-- Redes Sociales (Agregado del concepto) -->
-                     <div class="glass-panel p-4 rounded-xl">
-                        <h4 class="font-bold text-sm mb-3 text-white">Síguenos</h4>
-                        <div class="flex justify-between gap-2">
-                            <button class="flex-1 bg-[#5865F2] hover:opacity-90 py-2 rounded text-white text-xs font-bold flex items-center justify-center gap-2 transition">
-                                <i class="fab fa-discord"></i> Discord
-                            </button>
-                            <button class="flex-1 bg-[#1DA1F2] hover:opacity-90 py-2 rounded text-white text-xs font-bold flex items-center justify-center gap-2 transition">
-                                <i class="fab fa-twitter"></i> Twitter
-                            </button>
+                        <div class="bg-black/40 p-4 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition text-center group">
+                            <i class="fas fa-server text-brand-cyan mb-2 text-xl group-hover:scale-110 transition"></i>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Región</div>
+                            <div class="text-white font-bold">LATAM Norte</div>
+                        </div>
+                        <div class="bg-black/40 p-4 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition text-center group">
+                            <i class="fas fa-shield-alt text-brand-cyan mb-2 text-xl group-hover:scale-110 transition"></i>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Anti-Cheat</div>
+                            <div class="text-white font-bold">Requerido</div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Prize Pool Breakdown (Investors love seeing money distribution) -->
+                <div class="glass-panel p-8 rounded-2xl bg-[#151725] border border-white/5">
+                    <h3 class="font-bold text-xl mb-6 text-white font-display flex items-center gap-2">
+                        <i class="fas fa-trophy text-yellow-500"></i> Distribución de Premios
+                    </h3>
+                    <div class="space-y-4">
+                        <div v-for="(prize, i) in prizeDistribution" :key="i" class="relative">
+                            <div class="flex justify-between text-sm font-bold mb-1 z-10 relative">
+                                <span class="text-white">{{ prize.place }} Place</span>
+                                <span class="text-green-400">{{ prize.amount }}</span>
+                            </div>
+                            <div class="w-full bg-black/50 rounded-full h-8 overflow-hidden relative border border-white/5">
+                                <div :class="`h-full ${prize.color} relative`" :style="`width: ${prize.percent}%`">
+                                    <!-- Shine effect -->
+                                    <div class="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+                                </div>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-white/50">{{ prize.percent }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Lateral (Engagement & Monetization) -->
+            <aside class="lg:col-span-4 space-y-6">
+                
+                <!-- BATTLE PASS STYLE DROPS WIDGET -->
+                <div class="bg-[#1A1C2E] p-1 rounded-2xl border border-brand-purple/50 relative overflow-hidden group shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-purple/20 via-transparent to-transparent opacity-50"></div>
+                    
+                    <div class="bg-[#0B0C15]/90 rounded-xl p-6 relative z-10 h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-display font-bold text-lg text-white">Viewer Drops</h3>
+                                <p class="text-[10px] text-brand-cyan font-bold uppercase tracking-wider">Temporada 5</p>
+                            </div>
+                            <i class="fas fa-gift text-2xl text-brand-purple animate-bounce"></i>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Progress Bar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-white mb-2">
+                                    <span>Nivel 3</span>
+                                    <span>{{ watchProgress }} / 100 XP</span>
+                                </div>
+                                <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden border border-gray-700">
+                                    <div class="bg-gradient-to-r from-brand-purple to-brand-cyan h-3 rounded-full relative shadow-[0_0_10px_rgba(124,58,237,0.5)]" :style="`width: ${watchProgress}%`">
+                                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rewards Preview -->
+                            <div class="flex gap-2 justify-between">
+                                <div class="w-12 h-12 bg-gray-800 rounded border border-gray-600 flex items-center justify-center opacity-50 grayscale cursor-help" title="Skin Exclusiva">
+                                    <i class="fas fa-tshirt text-white"></i>
+                                </div>
+                                <div class="w-12 h-12 bg-gray-800 rounded border border-gray-600 flex items-center justify-center opacity-50 grayscale cursor-help" title="Moneda Virtual">
+                                    <i class="fas fa-coins text-yellow-500"></i>
+                                </div>
+                                <div class="w-12 h-12 bg-brand-purple/20 rounded border border-brand-purple flex items-center justify-center relative shadow-[0_0_10px_rgba(124,58,237,0.4)]">
+                                    <i class="fas fa-box-open text-white"></i>
+                                    <div class="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full border border-black"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="w-full mt-6 bg-white text-black font-bold py-2 rounded-lg text-xs hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                            <i class="fab fa-twitch"></i> Conectar Twitch
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Featured Teams (Mini List) -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">Equipos Destacados</h4>
+                    <div class="space-y-3">
+                        <div v-for="i in 4" :key="i" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition cursor-pointer group">
+                            <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-500 border border-white/10 group-hover:border-brand-cyan transition">T{{i}}</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-bold text-gray-300 group-hover:text-white transition">Team Alpha {{ i }}</div>
+                                <div class="text-[10px] text-gray-500">2,450 ELO</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-xs text-gray-600 group-hover:text-brand-cyan transition"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+
+        <!-- === VISTA: COMUNIDAD (Stream & Chat) === -->
+        <div v-show="activeTab === 'comunidad'" class="animate-fade-in">
+             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[70vh]">
+                 <!-- Video Area -->
+                 <div class="lg:col-span-9 h-full">
+                     <div class="w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-800 bg-black relative">
+                         <div id="twitch-embed" class="w-full h-full"></div>
+                     </div>
+                 </div>
+                 <!-- Chat Area -->
+                 <div class="lg:col-span-3 h-full flex flex-col gap-4">
+                     <div class="flex-1 glass-panel rounded-2xl overflow-hidden border border-gray-700 relative">
+                        <div class="absolute top-0 w-full bg-[#0B0C15] p-2 text-xs font-bold text-gray-400 border-b border-gray-800 z-10 flex justify-between">
+                            <span>Chat en Vivo</span>
+                            <span class="text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> 12.4k</span>
+                        </div>
+                        <iframe id="chat_embed" :src="`https://www.twitch.tv/embed/${twitchChannel}/chat?parent=localhost&darkpopout`" height="100%" width="100%" class="w-full h-full pt-8"></iframe>
+                     </div>
+                     <!-- Prediction Widget Mini -->
+                     <div class="h-auto bg-[#1A1C2E] p-4 rounded-xl border border-brand-cyan/20">
+                         <div class="text-[10px] text-brand-cyan font-bold uppercase mb-2">Predicción Activa</div>
+                         <p class="text-xs text-white font-bold mb-3">¿Quién ganará el mapa 1?</p>
+                         <div class="flex gap-2">
+                             <button class="flex-1 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white text-xs py-1.5 rounded border border-blue-600/50 transition">Liquid</button>
+                             <button class="flex-1 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-xs py-1.5 rounded border border-red-600/50 transition">G2</button>
+                         </div>
+                     </div>
                  </div>
              </div>
         </div>
+
     </main>
+
+    <!-- Footer Flotante CTA (Sticky Mobile/Desktop) -->
+    <div class="fixed bottom-0 w-full bg-[#0B0C15]/90 backdrop-blur-md border-t border-brand-cyan/20 p-4 z-50 lg:hidden">
+        <div class="flex justify-between items-center">
+            <div>
+                <div class="text-white font-bold text-sm">Neon City Cup</div>
+                <div class="text-[10px] text-green-400">Inscripciones Abiertas</div>
+            </div>
+            <button class="bg-brand-cyan text-black font-bold px-6 py-2 rounded-lg text-sm shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                Inscribirse
+            </button>
+        </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.glass-panel { background: #151725; border: 1px solid rgba(255,255,255,0.05); }
-.hero-gradient { background: linear-gradient(to bottom, rgba(11, 12, 21, 0) 0%, #0B0C15 100%); }
-.animate-fade-in { animation: fadeIn 0.5s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* Keyframes para el marquee infinito de sponsors */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); } /* Se mueve 1/3 porque triplicamos la lista */
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Glassmorphism Refinado */
+.glass-panel { background: rgba(21, 23, 37, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+/* Text Shadows */
+.text-shadow-xl { text-shadow: 0 4px 30px rgba(0,0,0,0.8); }
+
+/* Custom Scroll */
+.custom-scroll::-webkit-scrollbar { height: 8px; }
+.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
+
+/* Animaciones de Entrada */
+.animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* No Scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
