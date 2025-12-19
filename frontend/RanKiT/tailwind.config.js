@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // IMPORTANTE: Esto habilita el cambio de tema manual con la clase 'dark'
+  darkMode: 'class', 
   content: [
     "./components/**/*.{js,vue,ts}",
     "./layouts/**/*.vue",
@@ -7,7 +9,6 @@ module.exports = {
     "./plugins/**/*.{js,ts}",
     "./app.vue",
     "./error.vue",
-    // AGREGA ESTA LÍNEA para que lea tu carpeta 'app':
     "./app/**/*.{js,vue,ts}", 
   ],
   theme: {

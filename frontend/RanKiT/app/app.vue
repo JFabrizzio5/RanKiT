@@ -15,7 +15,11 @@ useHead({
 </script>
 
 <template>
-  <div class="antialiased selection:bg-[var(--rankit-neon)] selection:text-white">
+  <!-- FIX: Control de tema movido aquí. bg-gray-50 para light, dark:bg-[#050505] para dark -->
+  <div class="antialiased min-h-screen transition-colors duration-300
+    bg-gray-50 text-gray-900 
+    dark:bg-[#050505] dark:text-white 
+    selection:bg-[var(--rankit-neon)] selection:text-white">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -32,31 +36,37 @@ useHead({
 /* Fuentes Globales */
 body {
   font-family: 'Archivo', sans-serif;
-  background-color: var(--rankit-black);
-  color: white;
+  /* FIX: Eliminamos background-color y color fijos para permitir modo claro */
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {
   font-family: 'Chakra Petch', sans-serif;
 }
 
-/* Estilos Brutalistas Globales */
+/* Estilos Brutalistas Globales Adaptativos */
 .brutal-card { 
     position: relative;
     transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    background: #0a0a0a;
-    border: 1px solid #333;
-}
-
-html:not(.dark) .brutal-card {
-    background: #ffffff;
+    /* Fondo por defecto (Light Mode) */
+    background: #ffffff; 
     border: 1px solid #e5e5e5;
     box-shadow: 4px 4px 0px #00000010;
+}
+
+/* Override para Dark Mode */
+.dark .brutal-card {
+    background: #0a0a0a;
+    border: 1px solid #333;
+    box-shadow: none;
 }
 
 .brutal-card:hover { 
     border-color: var(--rankit-neon); 
     transform: translate(-4px, -4px);
+}
+
+/* Sombras Hover Adaptativas */
+.dark .brutal-card:hover {
     box-shadow: 6px 6px 0px var(--rankit-neon);
 }
 
@@ -80,6 +90,12 @@ html:not(.dark) .brutal-card:hover {
     background-color: white; 
     color: black; 
     box-shadow: 0 0 15px var(--rankit-neon);
+}
+
+/* Ajuste hover botón skew para modo claro */
+html:not(.dark) .btn-skew:hover {
+    background-color: black;
+    color: white;
 }
 
 .btn-skew-outline {
@@ -122,29 +138,40 @@ html:not(.dark) .brutal-card:hover {
 
 .btn-content { transform: skewX(10deg); }
 
-/* Inputs Brutalistas */
+/* Inputs Brutalistas Adaptativos */
 .brutal-input {
     width: 100%;
     background: transparent;
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid;
     padding: 1rem 0;
     font-family: 'Archivo', sans-serif;
     font-weight: 600;
     outline: none;
     transition: all 0.3s;
+}
+
+.dark .brutal-input {
+    border-color: #333;
     color: white;
 }
 
-html:not(.dark) .brutal-input { color: black; border-color: #e5e5e5; }
+html:not(.dark) .brutal-input {
+    border-color: #e5e5e5;
+    color: black;
+}
 
 .brutal-input:focus {
     border-color: var(--rankit-neon);
     padding-left: 1rem;
 }
 
-/* Scrollbar */
+/* Scrollbar Adaptativo */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #050505; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+.dark ::-webkit-scrollbar-track { background: #050505; }
+.dark ::-webkit-scrollbar-thumb { background: #333; }
+
 ::-webkit-scrollbar-thumb:hover { background: var(--rankit-neon); }
 </style>
