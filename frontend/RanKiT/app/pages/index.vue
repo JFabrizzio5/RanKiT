@@ -1,372 +1,625 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import AppLogo from '@/components/AppLogo.vue'
 
-// Estado para controlar el menú de desarrollo flotante
-const showDevMenu = ref(false)
+// --- Lógica de Traducción ---
+const currentLang = ref('es')
 
+const toggleLanguage = () => {
+    currentLang.value = currentLang.value === 'es' ? 'en' : 'es'
+}
+
+// --- Lógica de Tema (Dark/Light) ---
+const isDark = ref(true)
+
+const toggleTheme = () => {
+    isDark.value = !isDark.value
+    updateTheme()
+}
+
+const updateTheme = () => {
+    if (process.client) {
+        const html = document.documentElement
+        if (isDark.value) {
+            html.classList.add('dark')
+            localStorage.setItem('theme', 'dark')
+        } else {
+            html.classList.remove('dark')
+            localStorage.setItem('theme', 'light')
+        }
+    }
+}
+
+// Inicialización
+onMounted(() => {
+    if (process.client) {
+        // Cargar tema guardado o preferencia del sistema
+        const savedTheme = localStorage.getItem('theme')
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        
+        isDark.value = savedTheme === 'dark' || (!savedTheme && systemPrefersDark)
+        updateTheme()
+    }
+})
+
+// Textos (Diccionario)
+const t = {
+    es: {
+        nav: { tournaments: "Torneos", pricing: "Precios", custom: "Personalizado", partners: "Partners", login: "Ingresar", create: "Crear Cuenta" },
+        hero: { badge: "Plataforma de Torneos v2.0", title1: "Gestiona.", title2: "Compite.", title3: "Escala.", desc: "Desde canchas de fútbol 7 hasta arenas de esports. Rankit es el sistema operativo para organizadores que buscan profesionalismo.", btnOrganize: "Organizar Torneo", btnDemo: "Ver Demo" },
+        tournaments: { title: "Torneos", titleSub: "En Curso", desc: "Únete a la competencia. Demuestra tu nivel.", viewAll: "Ver Todos", cardCreate: "Crea tu Torneo" },
+        pricing: { title: "Elige tu", titleSub: "Nivel", desc: "Planes diseñados para cada etapa de tu organización. Cancela cuando quieras.", period: "mes", btnStart: "Comenzar", btnPro: "Obtener Pro", btnContact: "Contactar", recommended: "Recomendado", planEnterprise: "Empresas", feat: { tournaments: "2 Torneos al mes", brackets: "Brackets Automáticos", unlimited: "Torneos Ilimitados", obs: "OBS Widgets (Streaming)", payments: "Pagos integrados", multiuser: "Multiusuario", whitelabel: "Marca Blanca" } },
+        custom: { title: "¿Necesitas algo", titleSub: "a medida?", desc: "Para organizaciones grandes, ligas nacionales o integraciones personalizadas. Cuéntanos tu proyecto.", btnSend: "Enviar Solicitud", feats: ["Desarrollo de Features Exclusivos", "Servidores Dedicados", "Soporte de Ingeniería 24/7"] },
+        alliance: { title: "Únete al", titleSub: "Sindicato", techTitle: "Vendedores de Tecnología", creatorTitle: "Creadores de Contenido" }
+    },
+    en: {
+        nav: { tournaments: "Tournaments", pricing: "Pricing", custom: "Custom", partners: "Partners", login: "Login", create: "Sign Up" },
+        hero: { badge: "Tournament Platform v2.0", title1: "Manage.", title2: "Compete.", title3: "Scale.", desc: "From soccer fields to esports arenas. Rankit is the operating system for organizers seeking professionalism.", btnOrganize: "Organize Tournament", btnDemo: "Watch Demo" },
+        tournaments: { title: "Live", titleSub: "Tournaments", desc: "Join the competition. Show your skills.", viewAll: "View All", cardCreate: "Create Tournament" },
+        pricing: { title: "Choose your", titleSub: "Level", desc: "Plans designed for every stage of your organization. Cancel anytime.", period: "mo", btnStart: "Start Now", btnPro: "Get Pro", btnContact: "Contact Sales", recommended: "Recommended", planEnterprise: "Enterprise", feat: { tournaments: "2 Tournaments/mo", brackets: "Auto Brackets", unlimited: "Unlimited Tournaments", obs: "OBS Widgets", payments: "Integrated Payments", multiuser: "Multi-user Access", whitelabel: "White Label" } },
+        custom: { title: "Need something", titleSub: "custom?", desc: "For large organizations, national leagues, or custom integrations. Tell us about your project.", btnSend: "Send Request", feats: ["Exclusive Feature Development", "Dedicated Servers", "24/7 Engineering Support"] },
+        alliance: { title: "Join the", titleSub: "Syndicate", techTitle: "Tech Sellers", creatorTitle: "Content Creators" }
+    }
+}
+
+// Configuración de Meta Tags (Fuentes y CSS externo necesario)
 useHead({
-  title: 'RankIT by Cometax - Plataforma de Torneos',
-  meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
-  ],
-  link: [
-    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;600&display=swap' },
-    { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' }
-  ],
-  bodyAttrs: {
-    class: 'bg-[#0B0C15] text-white antialiased overflow-x-hidden'
-  }
+    title: 'Rankit - The Competitive Ecosystem',
+    script: [
+        { src: 'https://unpkg.com/@phosphor-icons/web' },
+        { src: 'https://cdn.tailwindcss.com' } // Asegurar compatibilidad visual rápida si no hay build step
+    ],
+    link: [
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Archivo:wght@300;400;600;800&display=swap' }
+    ]
 })
 </script>
 
 <template>
-  <div class="overflow-x-hidden relative font-sans text-white bg-[#0B0C15]">
-    
-    <!-- Navbar (Restaurado del concepto + links funcionales de Nuxt) -->
-    <nav class="fixed w-full z-50 glass-card border-b border-white/5 top-0 left-0">
-        <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
-            <NuxtLink to="/" class="flex items-center gap-2">
-                <i class="fas fa-trophy text-brand-purple text-2xl"></i>
-                <span class="font-display font-bold text-3xl tracking-tighter leading-none">RANK<span class="text-brand-cyan">IT</span></span>
-            </NuxtLink>
+<!-- Wrapper principal que simula el body -->
+<div class="main-wrapper min-h-screen transition-colors duration-300 selection:bg-[var(--rankit-neon)] selection:text-white"
+     :class="isDark ? 'bg-[#050505] text-white' : 'bg-gray-50 text-gray-900'">
 
-            <div class="hidden md:flex space-x-8 items-center text-sm font-semibold text-gray-300">
-                <!-- Links del Concepto -->
-                <a href="#juegos" class="hover:text-brand-cyan transition">Torneos</a>
-                <a href="#precios" class="hover:text-brand-cyan transition">Planes</a>
-                
-                <!-- Links de la App Nuxt -->
-                <NuxtLink to="/community" class="hover:text-brand-cyan transition">Comunidad</NuxtLink>
-                
-                <NuxtLink to="/admin" class="bg-gradient-to-r from-brand-purple to-brand-cyan text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-purple-900/50 hover:shadow-cyan-500/50 transition transform hover:scale-105">
-                    Dashboard
-                </NuxtLink>
+    <!-- Navbar -->
+    <nav class="fixed z-50 flex items-center justify-between w-full h-20 px-6 transition-colors duration-300 border-b lg:px-12 backdrop-blur-md"
+         :class="isDark ? 'bg-[#050505]/95 border-white/10' : 'bg-white/90 border-gray-200'">
+        
+        <NuxtLink to="/" class="flex items-center gap-3 cursor-pointer group">
+            <div class="w-10 h-10 transition-colors" :class="isDark ? 'text-white' : 'text-black group-hover:text-[var(--rankit-neon)]'">
+                <AppLogo />
             </div>
+            <span class="text-3xl italic font-bold tracking-tighter uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Rankit</span>
+        </NuxtLink>
+
+        <div class="hidden gap-8 text-sm font-bold tracking-widest uppercase md:flex" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+            <a href="#torneos" class="hover:text-[var(--rankit-neon)] transition">{{ t[currentLang].nav.tournaments }}</a>
+            <a href="#pricing" class="hover:text-[var(--rankit-neon)] transition" :class="isDark ? 'text-white' : 'text-black'">{{ t[currentLang].nav.pricing }}</a>
+            <a href="#contacto" class="hover:text-[var(--rankit-neon)] transition">{{ t[currentLang].nav.custom }}</a>
+            <a href="#partners" class="hover:text-[var(--rankit-neon)] transition text-[var(--rankit-neon)]">{{ t[currentLang].nav.partners }}</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Language Toggle -->
+            <button @click="toggleLanguage" class="flex items-center gap-1 text-xs font-bold border px-2 py-1 rounded hover:border-[var(--rankit-neon)] transition-colors"
+                    :class="isDark ? 'border-gray-700 text-white' : 'border-gray-300 text-black'">
+                <i class="text-lg ph ph-translate"></i>
+                <span>{{ currentLang.toUpperCase() }}</span>
+            </button>
+
+            <!-- Theme Toggle -->
+            <button @click="toggleTheme" class="p-2 mr-2 transition-colors border border-transparent rounded-lg"
+                    :class="isDark ? 'text-gray-400 hover:text-[var(--rankit-neon)] hover:border-gray-700' : 'text-gray-500 hover:text-[var(--rankit-neon)] hover:border-gray-300'">
+                <i v-if="isDark" class="text-xl ph-fill ph-sun"></i>
+                <i v-else class="text-xl ph-fill ph-moon"></i>
+            </button>
+
+            <NuxtLink to="/community" class="hidden sm:block text-sm font-bold uppercase tracking-wider mr-4 hover:text-[var(--rankit-neon)] transition"
+                      :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                {{ t[currentLang].nav.login }}
+            </NuxtLink>
+            
+            <NuxtLink to="/start" class="px-6 py-2 text-sm font-bold tracking-wider uppercase btn-skew">
+                <span class="btn-content">{{ t[currentLang].nav.create }}</span>
+            </NuxtLink>
         </div>
     </nav>
 
-    <!-- Hero Section (Manteniendo la estructura fiel al concepto) -->
-    <section class="hero-gradient min-h-screen flex items-center relative overflow-hidden pt-20">
-        <!-- Fondos decorativos -->
-        <div class="absolute top-20 right-0 w-1/2 h-full bg-[url('https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=2665&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
-        <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-purple rounded-full blur-[150px] opacity-20"></div>
-
-        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+    <!-- Hero Section -->
+    <header class="relative min-h-[90vh] flex items-center pt-20 bg-[length:40px_40px]"
+            :class="isDark ? 'bg-tech-grid-dark' : 'bg-tech-grid-light'">
+        
+        <div class="absolute inset-0 pointer-events-none bg-gradient-to-b"
+             :class="isDark ? 'from-transparent via-[#050505]/50 to-[#050505]' : 'from-transparent via-gray-50/80 to-gray-50'"></div>
+        
+        <div class="relative z-10 grid items-center w-full grid-cols-1 gap-16 px-6 mx-auto max-w-7xl lg:grid-cols-2">
             <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs font-bold mb-6">
-                    <svg class="w-4 h-4" viewBox="0 0 100 100" fill="none">
-                        <path d="M20 80 L50 50 L80 20" stroke="#06B6D4" stroke-width="12" stroke-linecap="round" />
-                        <circle cx="20" cy="80" r="15" fill="#06B6D4" />
-                        <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="#7C3AED" />
-                    </svg>
-                    POWERED BY COMETAX
+                <!-- CometaX Badge -->
+                <div class="flex items-center gap-2 mb-6 transition-opacity cursor-default opacity-70 hover:opacity-100 group">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Powered by</span>
+                    <img src="https://raw.githubusercontent.com/JFabrizzio5/CometaX/bbeb654b90e817236d9d64009b33618065fbba91/image_2025-12-16_083018257-removebg-preview%20(1).png" class="w-auto h-6 transition-transform group-hover:scale-105" :class="isDark ? 'invert' : ''" alt="CometaX Logo">
                 </div>
-                <h1 class="font-display font-bold text-5xl md:text-7xl mb-6 leading-tight">
-                    TU LIGA.<br>
-                    TU REGLAS.<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-purple">TU LEGADO.</span>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 shrink-0" :class="isDark ? 'text-white' : 'text-black'">
+                        <AppLogo />
+                    </div>
+
+                    <div class="inline-flex items-center gap-2 border border-[var(--rankit-neon)] text-[var(--rankit-neon)] px-3 py-1 text-xs font-bold uppercase tracking-widest bg-[var(--rankit-neon)]/5 h-fit">
+                        <span class="w-2 h-2 bg-[var(--rankit-neon)] rounded-full animate-pulse"></span>
+                        <span>{{ t[currentLang].hero.badge }}</span>
+                    </div>
+                </div>
+
+                <h1 class="font-display font-black text-6xl md:text-8xl leading-[0.9] mb-6 uppercase" :class="isDark ? 'text-white' : 'text-black'">
+                    <span>{{ t[currentLang].hero.title1 }}</span><br>
+                    <span>{{ t[currentLang].hero.title2 }}</span><br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)] to-gray-800 dark:to-white">{{ t[currentLang].hero.title3 }}</span>
                 </h1>
-                <p class="text-gray-400 text-lg mb-8 max-w-lg">
-                    La plataforma profesional para organizar torneos de Esports. 
-                    Desde brackets automatizados hasta <strong>overlays en tiempo real para tu stream</strong>.
+                <p class="text-xl mb-8 max-w-lg font-light border-l-4 border-[var(--rankit-neon)] pl-6" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                    {{ t[currentLang].hero.desc }}
                 </p>
-                <div class="flex gap-4">
-                    <a href="#precios" class="bg-white text-brand-dark font-bold px-8 py-4 rounded-full hover:scale-105 transition transform text-black">
-                        Comenzar Gratis
-                    </a>
-                    <NuxtLink to="/microsite" class="glass-card px-8 py-4 rounded-full font-bold hover:bg-white/10 transition flex items-center gap-2">
-                        <i class="fas fa-play-circle text-brand-purple"></i> Ver Demo
+                <div class="flex flex-col gap-4 sm:flex-row">
+                    <NuxtLink to="/admin" class="px-10 py-4 text-lg font-bold tracking-wider uppercase btn-skew">
+                        <span class="btn-content">{{ t[currentLang].hero.btnOrganize }}</span>
                     </NuxtLink>
+                    <button class="px-8 py-4 text-lg font-bold tracking-wider uppercase btn-skew-outline" :class="isDark ? 'text-white' : 'text-black'">
+                        <span class="flex items-center gap-3 btn-content">
+                            <i class="text-2xl ph ph-play-circle"></i> <span>{{ t[currentLang].hero.btnDemo }}</span>
+                        </span>
+                    </button>
                 </div>
             </div>
-            
-            <div class="relative hidden lg:block animate-float">
-                <div class="relative z-10 grid grid-cols-2 gap-4 transform rotate-6 hover:rotate-0 transition duration-700">
-                    <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jinx_0.jpg" class="rounded-2xl shadow-2xl border border-brand-purple/30 w-full h-64 object-cover hover:scale-105 transition duration-500">
-                    <img src="https://store-images.s-microsoft.com/image/apps.21507.13663857844271189.4c1de202-3961-4c40-a0aa-7f4f1388775a.20ed7782-0eda-4f9d-b421-4cc47492edc6" class="rounded-2xl shadow-2xl border border-brand-cyan/30 w-full h-64 object-cover mt-12 hover:scale-105 transition duration-500">
-                </div>
-                 <!-- Cometax Logo Grande Fondo (Decorativo) -->
-                <svg class="absolute -top-20 -right-20 w-96 h-96 opacity-5 rotate-12" viewBox="0 0 100 100" fill="none">
-                    <path d="M20 80 L80 20" stroke="white" stroke-width="2"/>
-                    <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="white" />
-                </svg>
-            </div>
-        </div>
-    </section>
 
-    <!-- Sección de Juegos (Agregada del concepto) -->
-    <section id="juegos" class="py-20 bg-[#0B0C15] relative">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="font-display text-4xl font-bold mb-12 text-center">Torneos Activos <span class="text-brand-purple">.</span></h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Fortnite -->
-                <div class="game-card group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
-                    <img src="https://assets.nintendo.com/image/upload/ar_16:9,c_lpad,w_1240/b_white/f_auto/q_auto/store/software/switch/70010000010192/bad0a23863b5cca0e9dc7bd023b98b21497e7711806504b589d5eef23de8609a" class="game-cover img-fortnite absolute inset-0 w-full h-full object-cover" alt="Fortnite">
-                    <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
-                        <h3 class="font-display font-bold text-2xl text-white mb-1">Fortnite</h3>
-                        <p class="text-brand-cyan text-sm font-bold mb-4">Battle Royale</p>
-                        <div class="flex justify-between items-center border-t border-white/20 pt-4">
-                            <span class="text-xs text-gray-300">15 Torneos Activos</span>
-                            <i class="fas fa-arrow-right text-white group-hover:translate-x-2 transition"></i>
+            <!-- Hero Visuals (Cards Flotantes) -->
+            <div class="relative hidden lg:block h-[600px]">
+                <div class="absolute z-10 p-3 transition duration-500 border shadow-xl top-10 right-10 w-72 hover:scale-105 brutal-card">
+                    <div class="relative h-40 mb-3 overflow-hidden" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'">
+                        <img src="https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=800" class="object-cover w-full h-full grayscale opacity-80 mix-blend-multiply dark:mix-blend-normal">
+                        <div class="absolute top-2 left-2 bg-black text-white text-[10px] font-bold px-2 py-1 uppercase">Fútbol 7</div>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Night League</h3>
+                            <p class="text-[10px] text-gray-500 font-mono">FINALES • HOY 20:00</p>
                         </div>
+                        <div class="text-xl font-mono font-bold text-[var(--rankit-neon)]">2 - 1</div>
                     </div>
                 </div>
 
-                <!-- League of Legends (Span 2) -->
-                <div class="game-card group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer lg:col-span-2">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
-                    <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ahri_27.jpg" class="game-cover absolute inset-0 w-full h-full object-cover" alt="LoL">
-                    <div class="absolute top-4 right-4 z-20 bg-brand-purple text-white px-3 py-1 rounded font-bold text-xs shadow-lg">TORNEO SPONSORED</div>
-                    <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
-                        <h3 class="font-display font-bold text-3xl text-white mb-1">League of Legends</h3>
-                        <p class="text-brand-cyan text-sm font-bold mb-4">Summoner's Rift 5v5</p>
-                        <div class="flex justify-between items-center border-t border-white/20 pt-4">
-                            <span class="text-xs text-gray-300">Premio: $50,000 MXN</span>
-                            <NuxtLink to="/microsite" class="bg-white text-black px-4 py-1 rounded-full text-xs font-bold hover:bg-gray-200">Ver Bracket</NuxtLink>
+                <div class="absolute top-40 right-48 w-80 p-3 z-20 border border-[var(--rankit-neon)] shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_50px_rgba(0,0,0,0.8)]" 
+                     :class="isDark ? 'bg-[#111]' : 'bg-white'">
+                    <div class="relative h-48 mb-3 overflow-hidden" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'">
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800" class="object-cover w-full h-full opacity-90 dark:opacity-80">
+                        <div class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase animate-pulse">Live</div>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <img src="https://ui-avatars.com/api/?name=T1&background=000&color=fff" class="w-6 h-6 bg-gray-300 rounded dark:bg-gray-800">
+                            <span class="text-sm font-bold" :class="isDark ? 'text-white' : 'text-black'">T1</span>
+                        </div>
+                        <span class="font-mono font-bold text-[var(--rankit-neon)] text-lg">13 - 11</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold" :class="isDark ? 'text-white' : 'text-black'">G2</span>
+                            <img src="https://ui-avatars.com/api/?name=G2&background=000&color=fff" class="w-6 h-6 bg-gray-300 rounded dark:bg-gray-800">
                         </div>
                     </div>
-                </div>
-
-                <!-- Valorant -->
-                <div class="game-card group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
-                    <img src="https://store-images.s-microsoft.com/image/apps.21507.13663857844271189.4c1de202-3961-4c40-a0aa-7f4f1388775a.20ed7782-0eda-4f9d-b421-4cc47492edc6" class="game-cover img-valorant absolute inset-0 w-full h-full object-cover" alt="Valorant">
-                    <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
-                        <h3 class="font-display font-bold text-2xl text-white mb-1">Valorant</h3>
-                        <p class="text-brand-cyan text-sm font-bold mb-4">Tactical Shooter</p>
-                        <div class="flex justify-between items-center border-t border-white/20 pt-4">
-                            <span class="text-xs text-gray-300">Ligas Regionales</span>
-                            <i class="fas fa-arrow-right text-white group-hover:translate-x-2 transition"></i>
-                        </div>
+                    <div class="w-full h-1 overflow-hidden rounded-full" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'">
+                        <div class="h-full bg-[var(--rankit-neon)] w-3/4"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Sección de Precios (Agregada del concepto) -->
-    <section id="precios" class="py-24 bg-[#151725] relative overflow-hidden">
-        <!-- Fondo sutil de rejilla -->
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5"></div>
+    <!-- Marquee -->
+    <div class="relative py-6 overflow-hidden select-none border-y"
+         :class="isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'">
         
-        <div class="max-w-7xl mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Planes para Organizadores</h2>
-                <p class="text-gray-400">Escala desde partidas privadas hasta estadios llenos.</p>
+        <div class="absolute top-0 bottom-0 left-0 z-10 w-24 pointer-events-none bg-gradient-to-r to-transparent"
+             :class="isDark ? 'from-black' : 'from-white'"></div>
+        <div class="absolute top-0 bottom-0 right-0 z-10 w-24 pointer-events-none bg-gradient-to-l to-transparent"
+             :class="isDark ? 'from-black' : 'from-white'"></div>
+
+        <div class="flex w-max animate-marquee items-center opacity-80 uppercase font-bold tracking-[0.2em] text-sm text-gray-500 dark:text-gray-400">
+            <div class="flex items-center gap-16 px-8" v-for="i in 2" :key="i">
+                <span>Valorant</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>Fútbol 7</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>League of Legends</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>Padel</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>Fortnite</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>Basquetbol</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>Call of Duty</span> <span class="text-[var(--rankit-neon)] text-lg">•</span> 
+                <span>FIFA/EAFC</span>
+                <span class="text-[var(--rankit-neon)] text-lg">•</span>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
-                
-                <!-- HOST UNICO -->
-                <div class="glass-card p-6 rounded-2xl hover:bg-white/5 transition border-t border-gray-700">
-                    <h3 class="font-display text-lg font-bold text-gray-300">Host Único</h3>
-                    <div class="my-4"><span class="text-3xl font-bold">$500</span> <span class="text-xs text-gray-400">MXN / evento</span></div>
-                    <p class="text-xs text-gray-500 mb-6 min-h-[40px]">Para eventos casuales de una sola vez.</p>
-                    <button class="w-full py-2 border border-gray-600 rounded-lg text-sm hover:bg-gray-700 transition mb-6 font-bold">Seleccionar</button>
-                    <ul class="text-xs space-y-3 text-gray-400">
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> 1 Torneo</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Bracket Automático</li>
-                        <li class="flex gap-2"><i class="fas fa-times text-red-500 opacity-50"></i> Sin Micrositio</li>
-                    </ul>
-                </div>
-
-                <!-- AMATEUR -->
-                <div class="glass-card p-6 rounded-2xl border border-brand-cyan/50 relative bg-brand-cyan/5 transform md:-translate-y-2">
-                    <div class="absolute top-0 right-0 bg-brand-cyan text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">POPULAR</div>
-                    <h3 class="font-display text-lg font-bold text-white">Amateur</h3>
-                    <div class="my-4"><span class="text-3xl font-bold">$300</span> <span class="text-xs text-gray-400">MXN / mes</span></div>
-                    <p class="text-xs text-gray-500 mb-6 min-h-[40px]">Para streamers y pequeños organizadores.</p>
-                    <button class="w-full py-2 bg-brand-cyan text-black font-bold rounded-lg text-sm hover:bg-cyan-400 transition mb-6 shadow-lg shadow-cyan-500/20">Empezar</button>
-                    <ul class="text-xs space-y-3 text-gray-400">
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Torneos propios</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> &lt; 50 participantes</li>
-                        <li class="flex gap-2"><i class="fas fa-times text-red-500 opacity-50"></i> Sin Micrositio</li>
-                    </ul>
-                </div>
-
-                <!-- PYME -->
-                <div class="glass-card p-6 rounded-2xl hover:bg-white/5 transition border-t-2 border-blue-500">
-                    <h3 class="font-display text-lg font-bold text-blue-400">Micro / PyME</h3>
-                    <div class="my-4"><span class="text-3xl font-bold">$3,000</span> <span class="text-xs text-gray-400">MXN / año</span></div>
-                    <p class="text-xs text-gray-500 mb-6 min-h-[40px]">Negocios medianos y Ligas Locales.</p>
-                    <button class="w-full py-2 border border-blue-500 text-blue-400 rounded-lg text-sm hover:bg-blue-500/10 transition mb-6 font-bold">Contratar</button>
-                    <ul class="text-xs space-y-3 text-gray-400">
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> <strong>Micrositio Propio</strong></li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> &gt; 50 participantes</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Branding Custom</li>
-                    </ul>
-                </div>
-
-                <!-- GRANDE -->
-                <div class="glass-card p-6 rounded-2xl hover:bg-white/5 transition border-t-2 border-purple-500">
-                    <h3 class="font-display text-lg font-bold text-purple-400">Empresa Grande</h3>
-                    <div class="my-4"><span class="text-3xl font-bold">$10k</span> <span class="text-xs text-gray-400">MXN / año</span></div>
-                    <p class="text-xs text-gray-500 mb-6 min-h-[40px]">Marcas establecidas.</p>
-                    <button class="w-full py-2 border border-purple-500 text-purple-400 rounded-lg text-sm hover:bg-purple-500/10 transition mb-6 font-bold">Contactar</button>
-                    <ul class="text-xs space-y-3 text-gray-400">
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Micrositio Avanzado</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Data Analytics</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Soporte Prioritario</li>
-                    </ul>
-                </div>
-
-                <!-- TITAN -->
-                <div class="glass-card p-6 rounded-2xl hover:bg-white/5 transition border-t-2 border-yellow-500 bg-gradient-to-b from-yellow-900/10 to-transparent">
-                    <h3 class="font-display text-lg font-bold text-yellow-400">Titán</h3>
-                    <div class="my-4"><span class="text-3xl font-bold">$15k</span> <span class="text-xs text-gray-400">MXN / año</span></div>
-                    <p class="text-xs text-gray-500 mb-6 min-h-[40px]">Corporaciones y Eventos Masivos.</p>
-                    <button class="w-full py-2 bg-yellow-500 text-black font-bold rounded-lg text-sm hover:bg-yellow-400 transition mb-6 shadow-lg shadow-yellow-500/20">Agendar Demo</button>
-                    <ul class="text-xs space-y-3 text-gray-400">
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> <strong>Torneos Ilimitados</strong></li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Integración API total</li>
-                        <li class="flex gap-2"><i class="fas fa-check text-brand-cyan"></i> Gestor de Cuenta Dedicado</li>
-                    </ul>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer Simple -->
-    <footer class="bg-black py-12 border-t border-white/10">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-3 opacity-70 hover:opacity-100 transition">
-                <!-- SVG Cometax en Footer -->
-                <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none">
-                    <path d="M20 80 L50 50 L80 20" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" />
-                    <circle cx="20" cy="80" r="10" fill="#06B6D4" />
-                    <path d="M50 50 L80 50 L80 80 L50 80 Z" fill="#7C3AED" />
-                </svg>
-                <div class="flex flex-col">
-                    <span class="font-display font-bold text-xl leading-none">COMETAX</span>
-                    <span class="text-[9px] text-gray-500">TECHNOLOGY SOLUTIONS</span>
-                </div>
-            </div>
-            <div class="text-gray-500 text-sm">
-                &copy; 2025 RankIT. Una solución de Cometax Technology Solutions.
-            </div>
-        </div>
-    </footer>
-
-    <!-- Botón Menú Desarrollo (Mantengo esto porque es útil para la navegación en la demo) -->
-    <button @click="showDevMenu = !showDevMenu" 
-            class="fixed bottom-6 right-6 z-[100] w-14 h-14 bg-brand-cyan text-black rounded-full shadow-[0_0_20px_rgba(6,182,212,0.6)] flex items-center justify-center font-bold text-2xl hover:scale-110 transition border-4 border-[#0B0C15]">
-        <i class="fas" :class="showDevMenu ? 'fa-times' : 'fa-compass'"></i>
-    </button>
-
-    <!-- Menú Desarrollo Flotante -->
-    <div v-if="showDevMenu" class="fixed bottom-24 right-6 z-[99] bg-[#151725] border border-brand-cyan/30 p-6 rounded-2xl shadow-2xl w-80 animate-slide-up backdrop-blur-xl">
-        <h3 class="font-display font-bold text-lg text-white mb-4 border-b border-gray-700 pb-2 flex items-center gap-2">
-            <i class="fas fa-map-signs text-brand-cyan"></i> Mapa del Sitio
-        </h3>
-        
-        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scroll">
-            
-            <div>
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Público / Jugador</h4>
-                <div class="space-y-2">
-                    <NuxtLink to="/" class="block bg-black/40 hover:bg-brand-cyan/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-cyan/30">
-                        <i class="fas fa-home w-5"></i> Landing Page
-                    </NuxtLink>
-                    <NuxtLink to="/start" class="block bg-black/40 hover:bg-brand-cyan/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-cyan/30">
-                        <i class="fas fa-search w-5"></i> Explorar Torneos
-                    </NuxtLink>
-                    <NuxtLink to="/community" class="block bg-black/40 hover:bg-brand-cyan/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-cyan/30">
-                        <i class="fas fa-users w-5"></i> Comunidad & Clips
-                    </NuxtLink>
-                    <NuxtLink to="/profile" class="block bg-black/40 hover:bg-brand-cyan/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-cyan/30">
-                        <i class="fas fa-user w-5"></i> Perfil Usuario
-                    </NuxtLink>
-                </div>
-            </div>
-
-            <div>
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Competitivo</h4>
-                <div class="space-y-2">
-                    <NuxtLink to="/tournaments/1" class="block bg-black/40 hover:bg-yellow-500/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-yellow-500/30">
-                        <i class="fas fa-info-circle w-5"></i> Detalle Torneo
-                    </NuxtLink>
-                    <NuxtLink to="/lobby/M-9921" class="block bg-black/40 hover:bg-yellow-500/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-yellow-500/30">
-                        <i class="fas fa-gamepad w-5"></i> Sala de Juego (Lobby)
-                    </NuxtLink>
-                     <NuxtLink to="/microsite" class="block bg-black/40 hover:bg-yellow-500/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-yellow-500/30">
-                        <i class="fas fa-sitemap w-5"></i> Micrositio / Brackets
-                    </NuxtLink>
-                </div>
-            </div>
-
-            <div>
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Administrador</h4>
-                <div class="space-y-2">
-                    <NuxtLink to="/admin" class="block bg-black/40 hover:bg-brand-purple/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-purple/30">
-                        <i class="fas fa-tachometer-alt w-5"></i> Dashboard Principal
-                    </NuxtLink>
-                    <NuxtLink to="/admin/tournaments" class="block bg-black/40 hover:bg-brand-purple/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-purple/30">
-                        <i class="fas fa-list w-5"></i> Lista de Torneos
-                    </NuxtLink>
-                    <NuxtLink to="/admin/streaming" class="block bg-black/40 hover:bg-brand-purple/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-brand-purple/30">
-                        <i class="fas fa-video w-5"></i> Herramientas OBS
-                    </NuxtLink>
-                </div>
-            </div>
-
-            <div>
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Overlays (OBS Sources)</h4>
-                <div class="space-y-2">
-                    <NuxtLink to="/overlay/scoreboard" target="_blank" class="block bg-black/40 hover:bg-red-500/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-red-500/30">
-                        <i class="fas fa-window-maximize w-5"></i> Scoreboard Widget
-                    </NuxtLink>
-                    <NuxtLink to="/overlay/laderboard" target="_blank" class="block bg-black/40 hover:bg-red-500/20 px-3 py-2 rounded text-sm text-gray-300 hover:text-white transition border border-transparent hover:border-red-500/30">
-                        <i class="fas fa-list-ol w-5"></i> Leaderboard Widget
-                    </NuxtLink>
-                </div>
-            </div>
-
         </div>
     </div>
 
-  </div>
+    <!-- Active Tournaments -->
+    <section id="torneos" class="py-24" :class="isDark ? 'bg-[#080808]' : 'bg-gray-50'">
+        <div class="px-6 mx-auto max-w-7xl">
+            <div class="flex items-end justify-between mb-12">
+                <div>
+                    <h2 class="mb-2 text-4xl font-black uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">
+                        {{ t[currentLang].tournaments.title }} <span class="text-[var(--rankit-neon)]">{{ t[currentLang].tournaments.titleSub }}</span>
+                    </h2>
+                    <p class="font-mono text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ t[currentLang].tournaments.desc }}</p>
+                </div>
+                <NuxtLink to="/start" class="hidden md:flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-[var(--rankit-neon)] transition" :class="isDark ? 'text-white' : 'text-black'">
+                    {{ t[currentLang].tournaments.viewAll }} <i class="ph ph-arrow-right"></i>
+                </NuxtLink>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <!-- Cards -->
+                <NuxtLink to="/tournaments/1" class="block cursor-pointer brutal-card group">
+                    <div class="aspect-[4/3] relative overflow-hidden border-b" :class="isDark ? 'border-gray-800' : 'border-gray-200'">
+                        <img src="https://images.unsplash.com/photo-1624138784181-2999e4253b85?q=80&w=800" class="object-cover w-full h-full transition duration-500 opacity-90 dark:opacity-60 group-hover:opacity-100 group-hover:scale-110">
+                        <div class="absolute top-0 left-0 bg-[var(--rankit-neon)] text-black text-xs font-bold px-3 py-1 uppercase">Esports</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display font-bold text-xl uppercase mb-1 group-hover:text-[var(--rankit-neon)] transition" :class="isDark ? 'text-white' : 'text-black'">Valorant Masters</h3>
+                        <p class="mb-4 font-mono text-xs text-gray-500">5v5 • PC • $10,000 MXN</p>
+                    </div>
+                </NuxtLink>
+
+                <div class="cursor-pointer brutal-card group">
+                    <div class="aspect-[4/3] relative overflow-hidden border-b" :class="isDark ? 'border-gray-800' : 'border-gray-200'">
+                        <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800" class="object-cover w-full h-full transition duration-500 opacity-90 dark:opacity-60 group-hover:opacity-100 group-hover:scale-110">
+                        <div class="absolute top-0 left-0 px-3 py-1 text-xs font-bold text-white uppercase bg-black">Deportes</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display font-bold text-xl uppercase mb-1 group-hover:text-[var(--rankit-neon)] transition" :class="isDark ? 'text-white' : 'text-black'">Copa Nocturna</h3>
+                        <p class="mb-4 font-mono text-xs text-gray-500">Fut 7 • Cancha Sur • Trofeo</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center p-6 text-center bg-transparent border-gray-300 border-dashed cursor-pointer brutal-card group hover:border-solid" :class="isDark ? 'border-gray-800' : ''">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition text-gray-500 group-hover:bg-[var(--rankit-neon)] group-hover:text-black" :class="isDark ? 'bg-gray-900' : 'bg-gray-200'">
+                        <i class="text-2xl ph ph-plus"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-500 uppercase font-display group-hover:text-black dark:group-hover:text-white">{{ t[currentLang].tournaments.cardCreate }}</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="relative py-24 overflow-hidden border-t"
+             :class="isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'">
+        
+        <div class="relative z-10 px-6 mx-auto max-w-7xl">
+            <div class="mb-20 text-center">
+                <h2 class="mb-4 text-5xl font-black uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">
+                    {{ t[currentLang].pricing.title }} <span class="text-[var(--rankit-neon)]">{{ t[currentLang].pricing.titleSub }}</span>
+                </h2>
+                <p class="max-w-2xl mx-auto font-light" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    {{ t[currentLang].pricing.desc }}
+                </p>
+            </div>
+
+            <div class="grid items-end grid-cols-1 gap-8 md:grid-cols-3">
+                <!-- Base -->
+                <div class="p-8 brutal-card h-min" :class="isDark ? 'bg-[#080808]' : 'bg-white'">
+                    <h3 class="text-2xl font-bold uppercase font-display" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Base</h3>
+                    <div class="flex items-baseline mt-4 mb-6">
+                        <span class="text-4xl font-black" :class="isDark ? 'text-white' : 'text-black'">$100</span>
+                        <span class="ml-2 font-mono text-sm text-gray-500">MXN / <span>{{ t[currentLang].pricing.period }}</span></span>
+                    </div>
+                    <button class="w-full py-3 mb-8 text-xs font-bold tracking-wider uppercase transition border hover:border-black dark:hover:border-white"
+                            :class="isDark ? 'border-gray-700 text-white' : 'border-gray-300 text-black'">
+                        {{ t[currentLang].pricing.btnStart }}
+                    </button>
+                    <ul class="space-y-4 text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                        <li class="flex items-center gap-3"><i class="ph ph-check text-[var(--rankit-neon)]"></i> {{ t[currentLang].pricing.feat.tournaments }}</li>
+                        <li class="flex items-center gap-3"><i class="ph ph-check text-[var(--rankit-neon)]"></i> {{ t[currentLang].pricing.feat.brackets }}</li>
+                    </ul>
+                </div>
+
+                <!-- Pro -->
+                <div class="brutal-card p-8 border-[var(--rankit-neon)] relative transform md:-translate-y-4 shadow-xl" :class="isDark ? 'bg-[#0a0a0a]' : 'bg-white'">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--rankit-neon)] text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
+                        {{ t[currentLang].pricing.recommended }}
+                    </div>
+                    <h3 class="text-3xl font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Gestor Pro</h3>
+                    <div class="flex items-baseline mt-4 mb-6">
+                        <span class="text-5xl font-black" :class="isDark ? 'text-white' : 'text-black'">$800</span>
+                        <span class="ml-2 font-mono text-sm text-gray-500">MXN / <span>{{ t[currentLang].pricing.period }}</span></span>
+                    </div>
+                    <button class="w-full bg-[var(--rankit-neon)] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-black font-bold py-4 uppercase text-xs tracking-wider transition mb-8 shadow-[0_0_20px_var(--rankit-neon)]">
+                        {{ t[currentLang].pricing.btnPro }}
+                    </button>
+                    <ul class="space-y-4 text-sm" :class="isDark ? 'text-white' : 'text-gray-800'">
+                        <li class="flex items-center gap-3"><i class="ph ph-check-circle text-[var(--rankit-neon)] text-lg"></i> {{ t[currentLang].pricing.feat.unlimited }}</li>
+                        <li class="flex items-center gap-3"><i class="ph ph-check-circle text-[var(--rankit-neon)] text-lg"></i> {{ t[currentLang].pricing.feat.obs }}</li>
+                        <li class="flex items-center gap-3"><i class="ph ph-check-circle text-[var(--rankit-neon)] text-lg"></i> {{ t[currentLang].pricing.feat.payments }}</li>
+                    </ul>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="p-8 brutal-card h-min" :class="isDark ? 'bg-[#080808]' : 'bg-white'">
+                    <h3 class="text-2xl font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">{{ t[currentLang].pricing.planEnterprise }}</h3>
+                    <div class="flex items-baseline mt-4 mb-6">
+                        <span class="text-4xl font-black" :class="isDark ? 'text-white' : 'text-black'">$5,000</span>
+                        <span class="ml-2 font-mono text-sm text-gray-500">MXN / <span>{{ t[currentLang].pricing.period }}</span></span>
+                    </div>
+                    <button class="w-full py-3 mb-8 text-xs font-bold tracking-wider uppercase transition border hover:border-black dark:hover:border-white"
+                            :class="isDark ? 'border-gray-700 text-white' : 'border-gray-300 text-black'">
+                        {{ t[currentLang].pricing.btnContact }}
+                    </button>
+                    <ul class="space-y-4 text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                        <li class="flex items-center gap-3"><i class="ph ph-check text-[var(--rankit-neon)]"></i> {{ t[currentLang].pricing.feat.multiuser }}</li>
+                        <li class="flex items-center gap-3"><i class="ph ph-check text-[var(--rankit-neon)]"></i> {{ t[currentLang].pricing.feat.whitelabel }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners / Alliance -->
+    <section id="partners" class="py-24 bg-[length:20px_20px] relative border-t"
+             :class="isDark ? 'bg-tech-grid-dark border-white/10 bg-[#050505]' : 'bg-tech-grid-light border-gray-200 bg-gray-50'">
+        <div class="absolute inset-0 pointer-events-none bg-gradient-to-t via-transparent to-transparent opacity-80"
+             :class="isDark ? 'from-black' : 'from-white'"></div>
+        <div class="relative z-10 max-w-6xl px-6 mx-auto">
+            <div class="mb-16 text-center">
+                <span class="text-[var(--rankit-neon)] font-bold tracking-[0.3em] uppercase text-xs mb-3 block">Rankit Alliance</span>
+                <h2 class="mb-6 text-4xl font-black uppercase font-display md:text-5xl" :class="isDark ? 'text-white' : 'text-black'">
+                    {{ t[currentLang].alliance.title }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)] to-purple-600">{{ t[currentLang].alliance.titleSub }}</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <!-- Tech Partner -->
+                <div class="p-10 border-l-4 brutal-card border-l-blue-500 group" :class="isDark ? 'bg-[#0c0c0c]' : 'bg-white'">
+                    <div class="flex items-center justify-center w-12 h-12 mb-6 text-blue-500 rounded-lg bg-blue-500/10">
+                        <i class="text-2xl ph ph-handshake"></i>
+                    </div>
+                    <h3 class="mb-3 text-2xl font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">{{ t[currentLang].alliance.techTitle }}</h3>
+                    <p class="h-12 mb-8" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                        ¿Vendes software o hardware a canchas deportivas? Añade Rankit a tu portafolio.
+                    </p>
+                    <a href="#" class="inline-flex items-center gap-2 text-sm font-bold tracking-wider text-blue-500 uppercase transition-colors group-hover:text-blue-400">
+                        Aplicar al Programa <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Creator -->
+                <div class="p-10 border-l-4 brutal-card border-l-pink-500 group" :class="isDark ? 'bg-[#0c0c0c]' : 'bg-white'">
+                    <div class="flex items-center justify-center w-12 h-12 mb-6 text-pink-500 rounded-lg bg-pink-500/10">
+                        <i class="text-2xl ph ph-video-camera"></i>
+                    </div>
+                    <h3 class="mb-3 text-2xl font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">{{ t[currentLang].alliance.creatorTitle }}</h3>
+                    <p class="h-12 mb-8" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                        Streamers y YouTubers: Usa Rankit para tus torneos comunitarios.
+                    </p>
+                    <a href="#" class="inline-flex items-center gap-2 text-sm font-bold tracking-wider text-pink-500 uppercase transition-colors group-hover:text-pink-400">
+                        Unirse como Creador <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charity -->
+    <section class="px-6 py-20 border-t" :class="isDark ? 'border-white/10 bg-[#080808]' : 'border-gray-200 bg-white'">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="w-16 h-16 bg-[var(--rankit-neon)]/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_var(--rankit-neon)]">
+                <i class="ph ph-heart text-[var(--rankit-neon)] text-3xl"></i>
+            </div>
+            <h2 class="mb-4 text-3xl font-black uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Competencia con <span class="text-[var(--rankit-neon)]">Causa</span></h2>
+            <p class="max-w-2xl mx-auto mb-8 text-base leading-relaxed" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                El éxito sabe mejor compartido. El <span class="font-bold text-[var(--rankit-neon)]">10% de tu suscripción</span> se va directo a causas sociales vía Fundación CometaX.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-8 transition-all duration-500 opacity-60 grayscale hover:grayscale-0">
+                <div class="flex items-center gap-2 font-bold text-gray-500" :class="isDark ? 'hover:text-white' : 'hover:text-black'"><i class="ph ph-plant"></i> GreenFields</div>
+                <div class="flex items-center gap-2 font-bold text-gray-500" :class="isDark ? 'hover:text-white' : 'hover:text-black'"><i class="ph ph-graduation-cap"></i> EduSports</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section id="contacto" class="py-24 border-t" :class="isDark ? 'bg-[#050505] border-white/10' : 'bg-gray-50 border-gray-200'">
+        <div class="grid items-center max-w-5xl grid-cols-1 gap-16 px-6 mx-auto md:grid-cols-2">
+            <div>
+                <span class="text-[var(--rankit-neon)] font-bold tracking-widest uppercase text-xs mb-2 block">Enterprise</span>
+                <h2 class="mb-6 text-4xl font-black uppercase font-display md:text-5xl" :class="isDark ? 'text-white' : 'text-black'">
+                    {{ t[currentLang].custom.title }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)] to-gray-800 dark:to-white">{{ t[currentLang].custom.titleSub }}</span>
+                </h2>
+                <p class="mb-8 text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ t[currentLang].custom.desc }}</p>
+                <ul class="space-y-4 text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                    <li v-for="(feat, i) in t[currentLang].custom.feats" :key="i" class="flex items-center gap-3">
+                        <i class="ph ph-check text-[var(--rankit-neon)]"></i> {{ feat }}
+                    </li>
+                </ul>
+            </div>
+
+            <div class="p-8 brutal-card" :class="isDark ? 'bg-[#0a0a0a]' : 'bg-white'">
+                <form class="space-y-8">
+                    <div>
+                        <input type="text" :placeholder="t[currentLang].custom.inputName || 'NOMBRE COMPLETO'" class="brutal-input">
+                    </div>
+                    <div>
+                        <input type="email" :placeholder="t[currentLang].custom.inputEmail || 'CORREO ELECTRONICO'" class="brutal-input">
+                    </div>
+                    <div>
+                        <textarea :placeholder="t[currentLang].custom.inputDetails || 'DETALLES DEL PROYECTO'" rows="3" class="resize-none brutal-input"></textarea>
+                    </div>
+                    <button type="button" class="w-full py-4 mt-4 text-sm font-bold tracking-wider uppercase btn-skew">
+                        <span class="btn-content">{{ t[currentLang].custom.btnSend }}</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 transition-colors border-t"
+            :class="isDark ? 'bg-black border-white/10' : 'bg-gray-100 border-gray-200'">
+        <div class="flex flex-col items-center justify-between gap-12 px-6 mx-auto max-w-7xl md:flex-row md:gap-6">
+            
+            <div class="flex items-center gap-4">
+                <div class="w-8 h-8 text-gray-600">
+                    <AppLogo />
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Rankit</span>
+                    <span class="text-[10px] font-mono uppercase tracking-widest" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Competitive Platform</span>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center justify-center gap-2 transition-opacity cursor-pointer group hover:opacity-100">
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="isDark ? 'text-gray-600' : 'text-gray-400'">Powered By</span>
+                <div class="flex items-center gap-2">
+                    <img src="https://raw.githubusercontent.com/JFabrizzio5/CometaX/bbeb654b90e817236d9d64009b33618065fbba91/image_2025-12-16_083018257-removebg-preview%20(1).png" alt="CometaX Logo" class="w-auto h-8 transition-all duration-500 group-hover:scale-105 opacity-60 group-hover:opacity-100" :class="isDark ? 'invert' : ''">
+                    <span class="text-lg font-bold tracking-tight transition-colors group-hover:text-[var(--rankit-neon)]" :class="isDark ? 'text-gray-200' : 'text-gray-800'">CometaX</span>
+                </div>
+            </div>
+
+            <div class="font-mono text-xs tracking-widest uppercase" :class="isDark ? 'text-gray-700' : 'text-gray-500'">
+                © 2025 Rankit System
+            </div>
+        </div>
+    </footer>
+</div>
 </template>
 
-<style scoped>
-/* Clases personalizadas restauradas del concepto */
-.glass-card { 
-    background: rgba(21, 23, 37, 0.7); 
-    backdrop-filter: blur(12px); 
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-}
-.hero-gradient { 
-    background: radial-gradient(circle at top right, #1e1b4b, #0B0C15); 
-}
-.animate-float {
-    animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+<style>
+/* --- ESTILOS CRÍTICOS DEL HTML ORIGINAL --- */
+:root {
+  --rankit-neon: #bf00ff;
 }
 
-/* Efectos de Hover para las Game Cards */
-.game-cover { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-.game-card:hover .game-cover { transform: scale(1.05); }
-
-/* Animación del menú */
-@keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Fuentes */
+.font-display {
+    font-family: 'Chakra Petch', sans-serif;
 }
-.animate-slide-up {
-    animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+body {
+    font-family: 'Archivo', sans-serif;
 }
 
-/* Scrollbar personalizada para el menú */
-.custom-scroll::-webkit-scrollbar { width: 4px; }
-.custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-.custom-scroll::-webkit-scrollbar-thumb { background: #06B6D4; border-radius: 4px; }
+/* Grids de Fondo (Recreando tailwind.config) */
+.bg-tech-grid-dark {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+.bg-tech-grid-light {
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
 
-/* Ajustes de posición de imagen */
-.img-fortnite { object-position: center top; }
-.img-valorant { object-position: center 20%; }
+/* Animación Marquee */
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+    animation: marquee 30s linear infinite;
+}
+
+/* Brutal Card Styles */
+.brutal-card { 
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid;
+}
+.main-wrapper.bg-\[\#050505\] .brutal-card {
+    background: #0a0a0a;
+    border-color: #333;
+}
+.main-wrapper:not(.bg-\[\#050505\]) .brutal-card {
+    background: #ffffff;
+    border-color: #e5e5e5;
+    box-shadow: 4px 4px 0px #00000010;
+}
+.brutal-card:hover { 
+    border-color: var(--rankit-neon); 
+    transform: translate(-4px, -4px);
+}
+.main-wrapper.bg-\[\#050505\] .brutal-card:hover {
+    box-shadow: 6px 6px 0px var(--rankit-neon);
+}
+.main-wrapper:not(.bg-\[\#050505\]) .brutal-card:hover {
+    box-shadow: 6px 6px 0px var(--rankit-neon), 6px 6px 0px 2px black;
+}
+
+/* Botones Sesgados */
+.btn-skew {
+    background-color: var(--rankit-neon);
+    color: white;
+    transform: skewX(-10deg);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.btn-skew:hover { 
+    background-color: white; 
+    color: black; 
+    box-shadow: 0 0 15px var(--rankit-neon);
+}
+.main-wrapper:not(.bg-\[\#050505\]) .btn-skew:hover {
+    background-color: black;
+    color: white;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+}
+
+.btn-skew-outline {
+    background: transparent;
+    color: currentColor;
+    border: 1px solid currentColor;
+    transform: skewX(-10deg);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.btn-skew-outline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: currentColor;
+    transition: all 0.3s ease;
+    z-index: -1;
+    opacity: 0.1;
+}
+.btn-skew-outline:hover {
+    transform: skewX(-10deg) translateY(-2px);
+    box-shadow: 4px 4px 0px var(--rankit-neon);
+    border-color: var(--rankit-neon);
+    color: var(--rankit-neon);
+}
+.btn-skew-outline:hover::before {
+    left: 0;
+}
+.btn-content { transform: skewX(10deg); }
+
+/* Inputs Brutalistas */
+.brutal-input {
+    width: 100%;
+    background: transparent;
+    border-bottom: 2px solid;
+    padding: 1rem 0;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.3s;
+}
+.main-wrapper.bg-\[\#050505\] .brutal-input {
+    color: white;
+    border-color: #333;
+}
+.main-wrapper:not(.bg-\[\#050505\]) .brutal-input {
+    color: black;
+    border-color: #e5e5e5;
+}
+.brutal-input:focus {
+    border-color: var(--rankit-neon);
+    padding-left: 1rem;
+}
 </style>
