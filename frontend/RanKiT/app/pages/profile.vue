@@ -1,217 +1,175 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import AppLogo from '@/components/AppLogo.vue'
 
-const activeTab = ref('active') // active, history, matches
-const showTicketModal = ref(false)
-
-const switchTab = (tab) => {
-  activeTab.value = tab
+// --- Lógica Global ---
+const currentLang = ref('es')
+const toggleLanguage = () => currentLang.value = currentLang.value === 'es' ? 'en' : 'es'
+const isDark = ref(true)
+const toggleTheme = () => { isDark.value = !isDark.value; updateTheme() }
+const updateTheme = () => {
+    if (process.client) {
+        document.documentElement.classList.toggle('dark', isDark.value)
+        localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+    }
 }
+onMounted(() => {
+    if (process.client) {
+        const saved = localStorage.getItem('theme')
+        isDark.value = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        updateTheme()
+    }
+})
+
+const activeTab = ref('active')
+const switchTab = (tab) => { activeTab.value = tab }
 </script>
 
 <template>
-  <div class="bg-[#0B0C15] min-h-screen font-sans pb-12 text-white">
+  <div class="min-h-screen pb-12 font-sans transition-colors duration-300 main-wrapper"
+       :class="isDark ? 'bg-[#050505] text-white' : 'bg-gray-50 text-gray-900'">
     
-    <div class="match-bar fixed top-0 left-0 w-full h-14 flex items-center justify-between px-6 lg:px-12 z-[60] shadow-lg">
+    <!-- Match Bar (Persistent) -->
+    <div class="fixed top-0 left-0 w-full h-14 flex items-center justify-between px-6 lg:px-12 z-[60] shadow-lg border-b transition-colors"
+         :class="isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'">
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span class="text-xs font-bold text-indigo-200 uppercase tracking-wider">Partida en Curso</span>
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <span class="text-xs font-bold tracking-wider uppercase" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Partida en Curso</span>
             </div>
-            <div class="h-4 w-px bg-indigo-500/50"></div>
-            <span class="text-sm font-bold text-white">Neon City Cup - Ronda 3 vs <span class="text-brand-cyan">Team Liquid</span></span>
+            <div class="w-px h-4 bg-gray-600"></div>
+            <span class="text-sm font-bold">Neon City Cup - <span class="text-[var(--rankit-neon)]">Team Liquid</span></span>
         </div>
         <div class="flex items-center gap-3">
-            <NuxtLink to="/lobby/M-9921" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
-                <i class="fas fa-gamepad"></i> Ir al Lobby
+             <NuxtLink to="/lobby/M-9921" class="px-4 py-1 text-[10px] font-bold tracking-wider uppercase btn-skew">
+                <span class="btn-content">Ir al Lobby</span>
             </NuxtLink>
-            <button @click="showTicketModal = !showTicketModal" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 border border-red-500/30 px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
-                <i class="fas fa-life-ring"></i> Reportar Problema
-            </button>
         </div>
     </div>
 
-    <TheNavbar class="!top-14 transition-all duration-300" />
-
-    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 pt-36">
+    <!-- Navbar Unificado (Offset por Match Bar) -->
+    <nav class="fixed z-50 flex items-center justify-between w-full h-20 px-6 transition-all duration-300 border-b lg:px-12 backdrop-blur-md top-14"
+         :class="isDark ? 'bg-[#050505]/95 border-white/10' : 'bg-white/90 border-gray-200'">
         
-        <aside class="lg:col-span-3 space-y-6">
-            <div class="glass-panel rounded-2xl p-6 text-center relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-brand-purple/20 to-transparent"></div>
+         <NuxtLink to="/" class="flex items-center gap-3 cursor-pointer group">
+            <div class="w-10 h-10 transition-colors" :class="isDark ? 'text-white' : 'text-black group-hover:text-[var(--rankit-neon)]'">
+                <AppLogo />
+            </div>
+            <span class="text-3xl italic font-bold tracking-tighter uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Rankit</span>
+        </NuxtLink>
+
+        <div class="flex items-center gap-4">
+             <button @click="toggleLanguage" class="flex items-center gap-1 text-xs font-bold border px-2 py-1 rounded hover:border-[var(--rankit-neon)] transition-colors"
+                    :class="isDark ? 'border-gray-700 text-white' : 'border-gray-300 text-black'">
+                <span>{{ currentLang.toUpperCase() }}</span>
+            </button>
+            <button @click="toggleTheme" class="p-2 transition-colors border border-transparent rounded-lg"
+                    :class="isDark ? 'text-gray-400 hover:text-[var(--rankit-neon)] hover:border-gray-700' : 'text-gray-500 hover:text-[var(--rankit-neon)] hover:border-gray-300'">
+                <i v-if="isDark" class="text-xl ph-fill ph-sun"></i>
+                <i v-else class="text-xl ph-fill ph-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="grid grid-cols-1 gap-8 px-6 py-8 mx-auto max-w-7xl lg:px-8 lg:grid-cols-12 pt-44">
+        
+        <aside class="space-y-6 lg:col-span-3">
+            <!-- Profile Card -->
+            <div class="relative p-6 overflow-hidden text-center brutal-card group">
+                <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[var(--rankit-neon)]/20 to-transparent"></div>
                 <div class="relative z-10">
-                    <div class="profile-avatar-container mx-auto mb-4 relative flex justify-center items-center">
-                        <img 
-                            src="https://i.pravatar.cc/150?img=12" 
-                            alt="Avatar"
-                            class="profile-avatar-img"
-                        >
-                        <div class="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-[#151725] animate-pulse"></div>
+                    <div class="relative flex items-center justify-center mx-auto mb-4 profile-avatar-container">
+                        <img src="https://i.pravatar.cc/150?img=12" alt="Avatar" class="profile-avatar-img">
+                        <div class="absolute w-5 h-5 bg-green-500 border-2 rounded-full bottom-1 right-1 animate-pulse" :class="isDark ? 'border-[#151725]' : 'border-white'"></div>
                     </div>
                     
-                    <h1 class="font-display font-bold text-2xl text-white">xSlayer99</h1>
-                    <p class="text-gray-400 text-xs mb-4 flex items-center justify-center gap-1">
-                        <img src="https://flagcdn.com/w20/mx.png" class="w-4 h-3 rounded-sm" alt="MX Flag"> México • Miembro desde 2023
+                    <h1 class="text-2xl font-bold font-display" :class="isDark ? 'text-white' : 'text-black'">xSlayer99</h1>
+                    <p class="flex items-center justify-center gap-1 mb-4 text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                         México • Miembro desde 2023
                     </p>
                     <div class="flex justify-center gap-2 mb-6">
-                        <span class="bg-brand-cyan/10 text-brand-cyan px-2 py-1 rounded text-[10px] font-bold uppercase border border-brand-cyan/20">Pro Player</span>
-                        <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded text-[10px] font-bold uppercase border border-purple-500/20">Capitán</span>
+                        <span class="text-[var(--rankit-neon)] px-2 py-1 rounded text-[10px] font-bold uppercase border border-[var(--rankit-neon)]/50">Pro Player</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 text-left bg-black/30 p-3 rounded-lg border border-gray-700">
+                    <div class="grid grid-cols-2 gap-2 p-3 text-left border rounded-lg" :class="isDark ? 'bg-black/30 border-gray-800' : 'bg-gray-100 border-gray-200'">
                         <div>
-                            <div class="text-[10px] text-gray-500 uppercase font-bold">Win Rate</div>
-                            <div class="text-green-400 font-mono font-bold">68.5%</div>
+                            <div class="text-[10px] uppercase font-bold text-gray-500">Win Rate</div>
+                            <div class="font-mono font-bold text-green-500">68.5%</div>
                         </div>
                         <div>
-                            <div class="text-[10px] text-gray-500 uppercase font-bold">Torneos</div>
-                            <div class="text-white font-mono font-bold">14</div>
+                            <div class="text-[10px] uppercase font-bold text-gray-500">Torneos</div>
+                            <div class="font-mono font-bold" :class="isDark ? 'text-white' : 'text-black'">14</div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="glass-panel rounded-2xl p-6">
-                <h3 class="font-bold text-white text-sm mb-4 flex items-center justify-between">Ranking por Juego</h3>
-                <div class="space-y-4">
-                    <div class="bg-black/30 p-3 rounded-lg border border-gray-700">
-                        <div class="flex items-center gap-3 mb-2">
-                            <img src="https://img.icons8.com/color/48/valorant.png" class="w-8 h-8" alt="Valorant Icon">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-400">Valorant</div>
-                                <div class="text-sm font-bold text-green-400">Ascendente 1</div>
-                            </div>
-                        </div>
-                        <div class="rank-progress"><div class="rank-fill bg-green-500" style="width: 75%"></div></div>
-                    </div>
-                     <div class="bg-black/30 p-3 rounded-lg border border-gray-700">
-                        <div class="flex items-center gap-3 mb-2">
-                            <img src="https://img.icons8.com/color/48/league-of-legends.png" class="w-8 h-8" alt="LoL Icon">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-400">League of Legends</div>
-                                <div class="text-sm font-bold text-blue-400">Platino IV</div>
-                            </div>
-                        </div>
-                        <div class="rank-progress"><div class="rank-fill bg-blue-500" style="width: 45%"></div></div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <div class="lg:col-span-6 space-y-8">
-            <div class="flex gap-6 border-b border-gray-800 pb-1">
-                <button @click="switchTab('active')" :class="['font-bold text-sm pb-3 transition', activeTab === 'active' ? 'text-brand-cyan border-b-2 border-brand-cyan' : 'text-gray-500 hover:text-white']">Torneos Activos</button>
-                <button @click="switchTab('history')" :class="['font-bold text-sm pb-3 transition', activeTab === 'history' ? 'text-brand-cyan border-b-2 border-brand-cyan' : 'text-gray-500 hover:text-white']">Historial</button>
+        <div class="space-y-8 lg:col-span-6">
+            <div class="flex gap-6 pb-1 border-b" :class="isDark ? 'border-gray-800' : 'border-gray-300'">
+                <button @click="switchTab('active')" :class="['font-bold text-sm pb-3 transition uppercase tracking-wider', activeTab === 'active' ? 'text-[var(--rankit-neon)] border-b-2 border-[var(--rankit-neon)]' : 'text-gray-500 hover:text-gray-800 dark:hover:text-white']">Torneos Activos</button>
+                <button @click="switchTab('history')" :class="['font-bold text-sm pb-3 transition uppercase tracking-wider', activeTab === 'history' ? 'text-[var(--rankit-neon)] border-b-2 border-[var(--rankit-neon)]' : 'text-gray-500 hover:text-gray-800 dark:hover:text-white']">Historial</button>
             </div>
 
-            <div v-show="activeTab === 'active'" class="space-y-4 animate-fade-in">
-                 <div class="glass-panel p-5 rounded-xl border-l-4 border-l-green-500 relative overflow-hidden">
-                    <div class="flex justify-between items-start mb-4 relative z-10">
+            <div v-show="activeTab === 'active'" class="space-y-4">
+                 <div class="p-6 border-l-4 brutal-card border-l-green-500">
+                    <div class="flex items-start justify-between mb-4">
                         <div class="flex gap-4">
-                            <img src="https://img.icons8.com/color/96/valorant.png" class="w-12 h-12" alt="Valorant">
+                            <div class="flex items-center justify-center w-12 h-12 bg-gray-800 rounded">
+                                <i class="text-2xl text-white fas fa-gamepad"></i>
+                            </div>
                             <div>
-                                <h3 class="font-display font-bold text-lg text-white">Neon City Cup</h3>
-                                <p class="text-xs text-green-400 font-bold flex items-center gap-1">
+                                <h3 class="text-lg font-bold uppercase font-display" :class="isDark ? 'text-white' : 'text-black'">Neon City Cup</h3>
+                                <p class="flex items-center gap-1 text-xs font-bold text-green-500">
                                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> En Curso
                                 </p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-xs text-gray-500 uppercase">Siguiente Match</div>
-                            <div class="text-sm font-bold text-white">18:30 PM (Hoy)</div>
-                        </div>
                     </div>
-                    <div class="bg-gray-800 h-2 rounded-full mb-2 overflow-hidden">
-                        <div class="bg-green-500 h-full rounded-full" style="width: 60%"></div>
-                    </div>
-                    <div class="flex justify-between text-[10px] text-gray-400 mb-4">
-                        <span>Fase de Grupos</span>
-                        <span>Playoffs</span>
-                        <span>Final</span>
-                    </div>
-                    <div class="flex gap-3">
-                        <NuxtLink to="/lobby/M-9921" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg text-xs font-bold transition text-center flex items-center justify-center">
-                            Ir a Sala de Juego
-                        </NuxtLink>
-                        <button class="px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-xs font-bold transition border border-gray-700">Ayuda</button>
-                    </div>
-                </div>
-            </div>
-
-            <div v-show="activeTab === 'history'" class="space-y-4 animate-fade-in">
-                 <div class="glass-panel p-4 rounded-xl flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                         <div class="w-10 h-10 rounded bg-gradient-to-br from-yellow-600 to-yellow-400 flex items-center justify-center text-black font-bold">
-                             <i class="fas fa-trophy"></i>
-                         </div>
-                         <div>
-                             <h4 class="font-bold text-white">Summer Championship 2024</h4>
-                             <p class="text-xs text-gray-400">Valorant • Finalizado: 15 Ago 2024</p>
-                         </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-brand-purple font-bold text-sm">Top 4</div>
-                        <div class="text-[10px] text-green-400">Premio: $500 MXN</div>
-                    </div>
+                    <NuxtLink to="/lobby/M-9921" class="block w-full py-3 text-xs font-bold tracking-wider text-center uppercase btn-skew">
+                        <span class="btn-content">Ir a Sala de Juego</span>
+                    </NuxtLink>
                 </div>
             </div>
         </div>
-
-        <aside class="lg:col-span-3 space-y-6">
-            <div class="glass-panel p-6 rounded-2xl border border-gray-700/50">
-                <h3 class="font-bold text-white text-sm mb-4 flex items-center gap-2">
-                    <i class="fas fa-life-ring text-brand-cyan"></i> Centro de Ayuda
-                </h3>
-                <div class="bg-blue-900/20 border border-blue-500/30 p-3 rounded-lg mb-4 cursor-pointer hover:bg-blue-900/30 transition" @click="showTicketModal = true">
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-xs font-bold text-blue-300">#TKT-8821</span>
-                        <span class="bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-bold">Abierto</span>
-                    </div>
-                    <p class="text-xs text-gray-300 font-bold">Reporte de Jugador (AFK)</p>
-                </div>
-            </div>
-        </aside>
     </main>
-
-    <div v-if="showTicketModal" class="fixed inset-0 z-[100]">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showTicketModal = false"></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-[#151725] border-l border-gray-700 shadow-2xl ticket-drawer flex flex-col">
-            <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-[#0B0C15]">
-                <h2 class="font-display font-bold text-xl text-white">Soporte</h2>
-                <button @click="showTicketModal = false" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="flex-1 p-6 text-gray-400 text-sm">
-                <p>Aquí iría el chat de soporte en tiempo real.</p>
-            </div>
-        </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
-.match-bar { background: linear-gradient(90deg, #1e1b4b 0%, #312e81 100%); border-bottom: 1px solid #4338ca; }
-.glass-panel { background: #151725; border: 1px solid rgba(255,255,255,0.05); }
-.ticket-drawer { animation: slideIn 0.3s ease-out; }
-@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-.rank-progress { background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 4px;}
-.rank-fill { height: 100%; border-radius: 2px; }
-.animate-fade-in { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+:root { --rankit-neon: #bf00ff; }
+.font-display { font-family: 'Chakra Petch', sans-serif; }
+body { font-family: 'Archivo', sans-serif; }
+
+.brutal-card { 
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid;
+}
+.main-wrapper.bg-\[\#050505\] .brutal-card { background: #0a0a0a; border-color: #333; }
+.main-wrapper:not(.bg-\[\#050505\]) .brutal-card { background: #ffffff; border-color: #e5e5e5; box-shadow: 4px 4px 0px #00000010; }
+.brutal-card:hover { border-color: var(--rankit-neon); transform: translate(-4px, -4px); }
+.main-wrapper.bg-\[\#050505\] .brutal-card:hover { box-shadow: 6px 6px 0px var(--rankit-neon); }
+.main-wrapper:not(.bg-\[\#050505\]) .brutal-card:hover { box-shadow: 6px 6px 0px var(--rankit-neon), 6px 6px 0px 2px black; }
+
+.btn-skew {
+    background-color: var(--rankit-neon);
+    color: white;
+    transform: skewX(-10deg);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.btn-skew:hover { background-color: white; color: black; box-shadow: 0 0 15px var(--rankit-neon); }
+.main-wrapper:not(.bg-\[\#050505\]) .btn-skew:hover { background-color: black; color: white; box-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+.btn-content { transform: skewX(10deg); }
 
 .profile-avatar-container {
-    width: 96px !important;
-    height: 96px !important;
-    min-width: 96px !important;
-    min-height: 96px !important;
-    border-radius: 9999px;
-    padding: 0.25rem;
-    background: linear-gradient(to right, #06B6D4, #7C3AED);
-    flex-shrink: 0;
+    width: 96px; height: 96px;
+    border-radius: 9999px; padding: 0.25rem;
+    background: linear-gradient(to right, #06B6D4, var(--rankit-neon));
 }
-
-.profile-avatar-img {
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 9999px;
-    border: 4px solid #151725;
-    object-fit: cover;
-}
+.profile-avatar-img { width: 100%; height: 100%; border-radius: 9999px; object-fit: cover; border: 4px solid; }
+.main-wrapper.bg-\[\#050505\] .profile-avatar-img { border-color: #151725; }
+.main-wrapper:not(.bg-\[\#050505\]) .profile-avatar-img { border-color: white; }
 </style>

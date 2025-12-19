@@ -1,4 +1,11 @@
 <script setup>
+import { computed } from 'vue'
+
+const route = useRoute()
+
+// Detectamos si estamos en una página de overlay (obs widgets)
+const isOverlay = computed(() => route.path.includes('/overlay'))
+
 useHead({
   title: 'Rankit - The Competitive Ecosystem',
   meta: [
@@ -15,11 +22,14 @@ useHead({
 </script>
 
 <template>
-  <!-- FIX: Control de tema movido aquí. bg-gray-50 para light, dark:bg-[#050505] para dark -->
-  <div class="antialiased min-h-screen transition-colors duration-300
-    bg-gray-50 text-gray-900 
-    dark:bg-[#050505] dark:text-white 
-    selection:bg-[var(--rankit-neon)] selection:text-white">
+  <!-- 
+      LOGICA DE FIX PARA OBS: 
+      Usamos un operador ternario en las clases. 
+      Si esOverlay es true -> 'bg-transparent text-white' (Transparente para OBS)
+      Si no -> 'bg-gray-50 ...' (Tus estilos normales de la app)
+  -->
+  <div class="antialiased min-h-screen transition-colors duration-300 selection:bg-[var(--rankit-neon)] selection:text-white"
+       :class="isOverlay ? 'bg-transparent text-white' : 'bg-gray-50 text-gray-900 dark:bg-[#050505] dark:text-white'">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -36,7 +46,6 @@ useHead({
 /* Fuentes Globales */
 body {
   font-family: 'Archivo', sans-serif;
-  /* FIX: Eliminamos background-color y color fijos para permitir modo claro */
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {

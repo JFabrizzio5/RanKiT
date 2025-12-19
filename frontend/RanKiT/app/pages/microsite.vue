@@ -29,9 +29,9 @@ const initialGroups = [
 <template>
   <div class="min-h-screen bg-[#050b14] text-slate-200 font-sans" style="background-image: linear-gradient(to bottom, #050b14, #0f172a);">
     <nav class="bg-[#0f172a] border-b border-white/10 p-4 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center justify-between mx-auto max-w-7xl">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 text-white font-bold p-2 rounded">TC</div>
+                <div class="p-2 font-bold text-white bg-blue-600 rounded">TC</div>
                 <h1 className="text-2xl font-display text-white tracking-widest uppercase">Torneo Control</h1>
             </div>
             <div class="flex gap-4">
@@ -41,34 +41,34 @@ const initialGroups = [
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-8">
+    <main class="p-8 mx-auto max-w-7xl">
         <!-- VISTA GRUPOS -->
-        <div v-if="activeTab === 'groups'" class="grid md:grid-cols-2 gap-6">
+        <div v-if="activeTab === 'groups'" class="grid gap-6 md:grid-cols-2">
             <div v-for="(group, i) in initialGroups" :key="i" class="bg-[#1e293b] rounded border border-slate-700 p-4">
-                <h3 class="text-xl font-display font-bold text-white mb-4 border-l-4 border-blue-500 pl-2">{{ group.name }}</h3>
+                <h3 class="pl-2 mb-4 text-xl font-bold text-white border-l-4 border-blue-500 font-display">{{ group.name }}</h3>
                 <table class="w-full text-sm text-left">
-                     <thead class="text-xs text-slate-500 uppercase bg-slate-900/50"><tr><th class="p-2">Team</th><th class="p-2 text-center">PTS</th></tr></thead>
+                     <thead class="text-xs uppercase text-slate-500 bg-slate-900/50"><tr><th class="p-2">Team</th><th class="p-2 text-center">PTS</th></tr></thead>
                      <tbody class="divide-y divide-slate-700">
-                        <tr v-for="t in group.teams" :key="t.id"><td class="p-2 font-bold">{{ t.name }}</td><td class="p-2 text-center font-bold text-white">{{ t.pts }}</td></tr>
+                        <tr v-for="t in group.teams" :key="t.id"><td class="p-2 font-bold">{{ t.name }}</td><td class="p-2 font-bold text-center text-white">{{ t.pts }}</td></tr>
                      </tbody>
                 </table>
             </div>
         </div>
 
         <!-- VISTA BRACKETS -->
-        <div v-else class="overflow-x-auto pb-20">
-            <div class="flex flex-row gap-12 justify-center p-8 min-w-max">
+        <div v-else class="pb-20 overflow-x-auto">
+            <div class="flex flex-row justify-center gap-12 p-8 min-w-max">
                 <!-- Columna Cuartos -->
                 <div class="flex flex-col justify-around gap-8">
-                    <div class="text-center text-slate-500 text-xs font-bold uppercase">Cuartos</div>
-                    <div v-for="match in bracket.quarterfinals" :key="match.id" class="match-card relative" :class="match.status">
+                    <div class="text-xs font-bold text-center uppercase text-slate-500">Cuartos</div>
+                    <div v-for="match in bracket.quarterfinals" :key="match.id" class="relative match-card" :class="match.status">
                         <div v-if="match.status === 'live'" class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded animate-pulse">LIVE</div>
                         <div class="bg-[#1e293b] w-60 border-l-4 p-3 rounded shadow-lg" :class="match.status === 'live' ? 'border-red-500' : 'border-slate-600'">
-                            <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center justify-between mb-1">
                                 <span :class="match.score1 > match.score2 ? 'text-white' : 'text-slate-400'">{{ match.team1 }}</span>
                                 <span class="font-mono font-bold text-blue-400">{{ match.score1 }}</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <div class="flex items-center justify-between">
                                 <span :class="match.score2 > match.score1 ? 'text-white' : 'text-slate-400'">{{ match.team2 }}</span>
                                 <span class="font-mono font-bold text-blue-400">{{ match.score2 }}</span>
                             </div>
@@ -80,7 +80,7 @@ const initialGroups = [
 
                 <!-- Columna Semis -->
                 <div class="flex flex-col justify-around gap-20">
-                    <div class="text-center text-slate-500 text-xs font-bold uppercase">Semis</div>
+                    <div class="text-xs font-bold text-center uppercase text-slate-500">Semis</div>
                      <div v-for="match in bracket.semifinals" :key="match.id" class="relative">
                         <div class="bg-[#1e293b] w-60 border-l-4 border-slate-600 p-3 rounded shadow-lg">
                              <div class="flex justify-between mb-1"><span class="text-slate-400">{{ match.team1 }}</span><span class="text-slate-500">{{ match.score1 }}</span></div>
@@ -92,10 +92,10 @@ const initialGroups = [
 
                 <!-- Columna Final -->
                 <div class="flex flex-col justify-center">
-                    <div class="text-center text-yellow-500 text-xs font-bold uppercase mb-4">Gran Final</div>
+                    <div class="mb-4 text-xs font-bold text-center text-yellow-500 uppercase">Gran Final</div>
                     <div class="bg-[#1e293b] w-60 border-l-4 border-yellow-500 p-4 rounded shadow-lg flex flex-col items-center gap-2">
                          <div class="text-4xl animate-bounce">🏆</div>
-                         <div class="text-slate-400 text-sm">TBD vs TBD</div>
+                         <div class="text-sm text-slate-400">TBD vs TBD</div>
                     </div>
                 </div>
             </div>
