@@ -44,14 +44,18 @@ const toggleTheme = () => {
     updateTheme()
 }
 
+// FIX: Actualizamos también el color del body para evitar la línea blanca al hacer scroll
 const updateTheme = () => {
     if (process.client) {
         const html = document.documentElement
+        const body = document.body
         if (isDark.value) {
             html.classList.add('dark')
+            body.style.backgroundColor = '#050505' // Color exacto del bg dark
             localStorage.setItem('theme', 'dark')
         } else {
             html.classList.remove('dark')
+            body.style.backgroundColor = '#f9fafb' // Color exacto del bg light (gray-50)
             localStorage.setItem('theme', 'light')
         }
     }
@@ -134,7 +138,8 @@ const filteredTournaments = computed(() => {
     </nav>
 
     <!-- Main Content -->
-    <div class="relative z-10 px-4 pt-32 mx-auto max-w-7xl sm:px-6">
+    <!-- FIX: Agregamos pb-20 al contenedor padre en lugar de mb-20 al hijo para evitar colapso de márgenes -->
+    <div class="relative z-10 px-4 pt-32 pb-20 mx-auto max-w-7xl sm:px-6">
         
         <!-- Search Header -->
         <div class="mb-16 text-center">
@@ -185,7 +190,7 @@ const filteredTournaments = computed(() => {
         </div>
 
         <!-- Grid Results -->
-        <div class="grid grid-cols-1 gap-8 mb-20 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
              <div v-for="tourney in filteredTournaments" :key="tourney.id" 
                   class="flex flex-col h-full cursor-pointer brutal-card group">
                 
