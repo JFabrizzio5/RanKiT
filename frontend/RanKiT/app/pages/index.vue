@@ -153,7 +153,7 @@ useHead({
                 <h1 class="font-display font-black text-6xl md:text-8xl leading-[0.9] mb-6 uppercase" :class="isDark ? 'text-white' : 'text-black'">
                     <span>{{ t[currentLang].hero.title1 }}</span><br>
                     <span>{{ t[currentLang].hero.title2 }}</span><br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)] to-gray-800 dark:to-white">{{ t[currentLang].hero.title3 }}</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)]" :class="isDark ? 'to-white' : 'to-black'">{{ t[currentLang].hero.title3 }}</span>
                 </h1>
                 <p class="text-xl mb-8 max-w-lg font-light border-l-4 border-[var(--rankit-neon)] pl-6" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
                     {{ t[currentLang].hero.desc }}
@@ -424,7 +424,7 @@ useHead({
             <div>
                 <span class="text-[var(--rankit-neon)] font-bold tracking-widest uppercase text-xs mb-2 block">Enterprise</span>
                 <h2 class="mb-6 text-4xl font-black uppercase font-display md:text-5xl" :class="isDark ? 'text-white' : 'text-black'">
-                    {{ t[currentLang].custom.title }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)] to-gray-800 dark:to-white">{{ t[currentLang].custom.titleSub }}</span>
+                    {{ t[currentLang].custom.title }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--rankit-neon)]" :class="isDark ? 'to-white' : 'to-black'">{{ t[currentLang].custom.titleSub }}</span>
                 </h2>
                 <p class="mb-8 text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ t[currentLang].custom.desc }}</p>
                 <ul class="space-y-4 text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
@@ -459,7 +459,7 @@ useHead({
         <div class="flex flex-col items-center justify-between gap-12 px-6 mx-auto max-w-7xl md:flex-row md:gap-6">
             
             <div class="flex items-center gap-4">
-                <div class="w-8 h-8 text-gray-600">
+                <div class="w-8 h-8" :class="isDark ? 'text-white' : 'text-gray-600'">
                     <AppLogo />
                 </div>
                 <div class="flex flex-col">
