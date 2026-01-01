@@ -1,0 +1,79 @@
+==========================================================================
+                  TABLA GENERAL DEL TORNEO (ACUMULADO)                    
+==========================================================================
+Total Partidas Procesadas: 2 (aprox)
+Equipos Totales: 69
+
+----------------------------------------------------------------------------------------------------
+| RANK | EQUIPO                                             | TOTAL PTS  | KILLS  | PROM. TOP  |
+----------------------------------------------------------------------------------------------------
+| #1    | GoToLinkedInBro & Jangel18_FJT                     | 75         | 9      | #12.5      |
+| #2    | Bean pizza & Hillfor3ver                           | 60         | 10     | #1.0       |
+| #3    | J c o f f & jackcraft1909                          | 59         | 10     | #2.0       |
+| #4    | CombatBrush861 & FancyGolf905                      | 56         | 8      | #1.0       |
+| #5    | IcC_magic & Zachy.mp4                              | 54         | 9      | #5.0       |
+| #6    | chivotx & Scooby-Wit-Rizz                          | 49         | 9      | #10.0      |
+| #7    | BoxedUp4life & Envy Gabriel149                     | 49         | 6      | #4.0       |
+| #8    | Cliffisqt & thick McNugget                         | 49         | 5      | #2.0       |
+| #9    | GerardoXD1350 & Jhonnytururu                       | 47         | 6      | #6.0       |
+| #10   | MateoMatt2512 & 特富埃ᴰᵉᵐᵒⁿ                           | 47         | 5      | #4.0       |
+| #11   | Koeqsssss & woonzgunzzz__                          | 46         | 4      | #3.0       |
+| #12   | Chimis-PV & ramon-pumas2011                        | 46         | 4      | #3.0       |
+| #13   | CloudKhan & LFCC_27                                | 43         | 6      | #10.0      |
+| #14   | a2theizzO2 & jordanboss23                          | 42         | 4      | #7.0       |
+| #15   | ElMentadolll & im HyxGa                            | 42         | 3      | #5.0       |
+| #16   | CapHarold & REX-PUMATRIEX                          | 40         | 4      | #9.0       |
+| #17   | JonathanM14_0 & Virgil086373                       | 40         | 3      | #7.0       |
+| #18   | guysan6891 & The CeeZee                            | 37         | 4      | #12.0      |
+| #19   | adricots & kygotkicks                              | 36         | 3      | #11.0      |
+| #20   | BallinBoy43 & Justintamezs                         | 35         | 4      | #14.0      |
+| #21   | BaloneyNips7180 & GlokkCrew                        | 34         | 6      | #19.0      |
+| #22   | peztheact1vst & wyarxcky                           | 34         | 3      | #13.0      |
+| #23   | Javier Sgv & LvHx4ny                               | 34         | 1      | #9.0       |
+| #24   | africanbaby6969 & temp-7866253                     | 31         | 4      | #18.0      |
+| #25   | Kramdaddy15 & snakes1514                           | 30         | 2      | #15.0      |
+| #26   | Khalelneitor & W3rtycan                            | 29         | 4      | #20.0      |
+| #27   | L30 AB & tavochpi                                  | 29         | 2      | #16.0      |
+| #28   | qtz5221 & Young_duhh65                             | 28         | 2      | #17.0      |
+| #29   | NANO SONシ & trippieTexas                           | 26         | 3      | #21.0      |
+| #30   | jetter989 & siennathebestest                       | 25         | 3      | #22.0      |
+| #31   | PLAYhard333588 & xX_N3TITOO_Xx                     | 25         | 3      | #22.0      |
+| #32   | AGENTICEBOY & SillyGoose5422                       | 24         | 1      | #19.0      |
+| #33   | Exemplxfy. & TacticalUSA11                         | 23         | 3      | #24.0      |
+| #34   | Justaguy1g & NQB DrxPz                             | 22         | 3      | #25.0      |
+| #35   | Fz Koniig & xXmurdererXx12                         | 22         | 2      | #23.0      |
+| #36   | Asalcedo316720 & marcopolo_sic3                    | 22         | 1      | #21.0      |
+| #37   | tr6gxdy_ & xProvxke                                | 21         | 3      | #26.0      |
+| #38   | Jhsxs & VvnCvInvitado                              | 18         | 2      | #27.0      |
+| #39   | BevanCooksUp & cottonqueen1                        | 18         | 2      | #27.0      |
+| #40   | ʟᴡᴄʜᴜɢɪɴ & WICHADUXK                               | 17         | 3      | #30.0      |
+| #41   | I_Love_TuckerSMM & TukNvrBrokeAgain                | 17         | 0      | #24.0      |
+| #42   | cl0uds1486 & warmish_bench866                      | 16         | 3      | #31.0      |
+| #43   | ltb_brady05 & TXC_Tjay23                           | 16         | 2      | #29.0      |
+| #44   | Gorge f1oyde & TTVToxicZyn                         | 16         | 0      | #25.0      |
+| #45   | Basaditoo & ChaosHand_1                            | 15         | 3      | #32.0      |
+| #46   | Elandy23 & L7kss Dy                                | 15         | 1      | #28.0      |
+| #47   | little muffin 14 & mkisbae                         | 15         | 0      | #26.0      |
+| #48   | amyb-956 & JoseTheGoat_22                          | 13         | 1      | #30.0      |
+| #49   | Cacowboy79s & Kyznx_Zito                           | 12         | 2      | #33.0      |
+| #50   | highon-her & Ox3wb                                 | 11         | 1      | #32.0      |
+| #51   | BallinBoy435642 & Justintamezs                     | 9          | 1      | #34.0      |
+| #52   | TenochGM03 & UrielGutierrez1                       | 8          | 0      | #33.0      |
+| #53   | emmamarriiee & glocctrey                           | 7          | 1      | #36.0      |
+| #54   | hshsbd738166hdn & night_Killer224                  | 7          | 0      | #34.0      |
+| #55   | BthemufG & warreadyace7                            | 5          | 2      | #40.0      |
+| #56   | ISUK6981 & Tyler_ 20202                            | 5          | 0      | #36.0      |
+| #57   | C0RTT8Z & martyymann                               | 4          | 2      | #44.0      |
+| #58   | elyack6097 & Helenkiller9438                       | 0          | 0      | #41.0      |
+| #59   | Chinoc12 & Dogi Le Grand                           | 0          | 0      | #41.0      |
+| #60   | FuZioN_ClappZz & PAT051504                         | 0          | 0      | #42.0      |
+| #61   | CONMAN7284 & EastonProck33                         | 0          | 0      | #42.0      |
+| #62   | Hyper 60Hz & joshpro128607                         | 0          | 0      | #43.0      |
+| #63   | Couch4Gaming & coyswrld                            | 0          | 0      | #44.0      |
+| #64   | Ggpowerrangerr & Kamiifyy                          | 0          | 0      | #45.0      |
+| #65   | EminentManx5155 & Spanky06BTW                      | 0          | 0      | #46.0      |
+| #66   | Mockstrz & Six-spd_Banga                           | 0          | 0      | #49.0      |
+| #67   | Batman-scarlet & xoxomairyn                        | 0          | 0      | #49.0      |
+| #68   | laamarri                                           | 0          | 0      | #50.0      |
+| #69   | hazelight〆 & TPL SH4R0D                            | 0          | 0      | #50.0      |
+----------------------------------------------------------------------------------------------------

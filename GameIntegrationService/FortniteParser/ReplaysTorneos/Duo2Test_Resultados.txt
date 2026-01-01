@@ -1,0 +1,41 @@
+--- RESULTADOS: Duo2Test.replay ---
+Fecha: 12/31/2025 5:40:18 PM
+Equipos encontrados: 35
+------------------------------------------------------------------------------------------
+| POS  | EQUIPO / JUGADORES                                 | KILLS  | PTS    |
+------------------------------------------------------------------------------------------
+| #1    | Bean pizza & Hillfor3ver                           | 10     | 60     |
+| #2    | Cliffisqt & thick McNugget                         | 5      | 49     |
+| #3    | Chimis-PV & ramon-pumas2011                        | 4      | 46     |
+| #4    | BoxedUp4life & Envy Gabriel149                     | 6      | 49     |
+| #5    | IcC_magic & Zachy.mp4                              | 9      | 54     |
+| #6    | GerardoXD1350 & Jhonnytururu                       | 6      | 47     |
+| #7    | JonathanM14_0 & Virgil086373                       | 3      | 40     |
+| #9    | CapHarold & REX-PUMATRIEX                          | 4      | 40     |
+| #10   | CloudKhan & LFCC_27                                | 6      | 43     |
+| #11   | adricots & kygotkicks                              | 3      | 36     |
+| #12   | guysan6891 & The CeeZee                            | 4      | 37     |
+| #14   | GoToLinkedInBro & Jangel18_FJT                     | 4      | 35     |
+| #15   | Kramdaddy15 & snakes1514                           | 2      | 30     |
+| #16   | L30 AB & tavochpi                                  | 2      | 29     |
+| #17   | qtz5221 & Young_duhh65                             | 2      | 28     |
+| #18   | africanbaby6969 & temp-7866253                     | 4      | 31     |
+| #19   | AGENTICEBOY & SillyGoose5422                       | 1      | 24     |
+| #20   | Khalelneitor & W3rtycan                            | 4      | 29     |
+| #21   | Asalcedo316720 & marcopolo_sic3                    | 1      | 22     |
+| #22   | PLAYhard333588 & xX_N3TITOO_Xx                     | 3      | 25     |
+| #24   | I_Love_TuckerSMM & TukNvrBrokeAgain                | 0      | 17     |
+| #25   | Justaguy1g & NQB DrxPz                             | 3      | 22     |
+| #26   | tr6gxdy_ & xProvxke                                | 3      | 21     |
+| #27   | BevanCooksUp & cottonqueen1                        | 2      | 18     |
+| #30   | ʟᴡᴄʜᴜɢɪɴ & WICHADUXK                               | 3      | 17     |
+| #32   | highon-her & Ox3wb                                 | 1      | 11     |
+| #33   | TenochGM03 & UrielGutierrez1                       | 0      | 8      |
+| #34   | BallinBoy435642 & Justintamezs                     | 1      | 9      |
+| #36   | emmamarriiee & glocctrey                           | 1      | 7      |
+| #40   | BthemufG & warreadyace7                            | 2      | 5      |
+| #41   | Chinoc12 & Dogi Le Grand                           | 0      | 0      |
+| #42   | CONMAN7284 & EastonProck33                         | 0      | 0      |
+| #44   | Couch4Gaming & coyswrld                            | 0      | 0      |
+| #46   | EminentManx5155 & Spanky06BTW                      | 0      | 0      |
+| #49   | Batman-scarlet & xoxomairyn                        | 0      | 0      |

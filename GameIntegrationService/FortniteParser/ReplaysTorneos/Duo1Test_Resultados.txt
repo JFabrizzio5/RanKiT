@@ -1,0 +1,41 @@
+--- RESULTADOS: Duo1Test.replay ---
+Fecha: 12/31/2025 5:40:18 PM
+Equipos encontrados: 35
+------------------------------------------------------------------------------------------
+| POS  | EQUIPO / JUGADORES                                 | KILLS  | PTS    |
+------------------------------------------------------------------------------------------
+| #1    | CombatBrush861 & FancyGolf905                      | 8      | 56     |
+| #2    | J c o f f & jackcraft1909                          | 10     | 59     |
+| #3    | Koeqsssss & woonzgunzzz__                          | 4      | 46     |
+| #4    | MateoMatt2512 & 特富埃ᴰᵉᵐᵒⁿ                           | 5      | 47     |
+| #5    | ElMentadolll & im HyxGa                            | 3      | 42     |
+| #7    | a2theizzO2 & jordanboss23                          | 4      | 42     |
+| #9    | Javier Sgv & LvHx4ny                               | 1      | 34     |
+| #10   | chivotx & Scooby-Wit-Rizz                          | 9      | 49     |
+| #11   | GoToLinkedInBro & Jangel18_FJT                     | 5      | 40     |
+| #13   | peztheact1vst & wyarxcky                           | 3      | 34     |
+| #14   | BallinBoy43 & Justintamezs                         | 4      | 35     |
+| #19   | BaloneyNips7180 & GlokkCrew                        | 6      | 34     |
+| #21   | NANO SONシ & trippieTexas                           | 3      | 26     |
+| #22   | jetter989 & siennathebestest                       | 3      | 25     |
+| #23   | Fz Koniig & xXmurdererXx12                         | 2      | 22     |
+| #24   | Exemplxfy. & TacticalUSA11                         | 3      | 23     |
+| #25   | Gorge f1oyde & TTVToxicZyn                         | 0      | 16     |
+| #26   | little muffin 14 & mkisbae                         | 0      | 15     |
+| #27   | Jhsxs & VvnCvInvitado                              | 2      | 18     |
+| #28   | Elandy23 & L7kss Dy                                | 1      | 15     |
+| #29   | ltb_brady05 & TXC_Tjay23                           | 2      | 16     |
+| #30   | amyb-956 & JoseTheGoat_22                          | 1      | 13     |
+| #31   | cl0uds1486 & warmish_bench866                      | 3      | 16     |
+| #32   | Basaditoo & ChaosHand_1                            | 3      | 15     |
+| #33   | Cacowboy79s & Kyznx_Zito                           | 2      | 12     |
+| #34   | hshsbd738166hdn & night_Killer224                  | 0      | 7      |
+| #36   | ISUK6981 & Tyler_ 20202                            | 0      | 5      |
+| #41   | elyack6097 & Helenkiller9438                       | 0      | 0      |
+| #42   | FuZioN_ClappZz & PAT051504                         | 0      | 0      |
+| #43   | Hyper 60Hz & joshpro128607                         | 0      | 0      |
+| #44   | C0RTT8Z & martyymann                               | 2      | 4      |
+| #45   | Ggpowerrangerr & Kamiifyy                          | 0      | 0      |
+| #49   | Mockstrz & Six-spd_Banga                           | 0      | 0      |
+| #50   | laamarri                                           | 0      | 0      |
+| #50   | hazelight〆 & TPL SH4R0D                            | 0      | 0      |
